@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/mi_list"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_list_white_24dp"
+        android:title="List">
+    </item>
+    <item
+        android:id="@+id/mi_add"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:title="Add">
+    </item>
+    <item
+        android:id="@+id/mi_delete"
+        app:showAsAction="never"
+        android:title="Delete">
+    </item>
+    <item
+        android:id="@+id/mi_edit"
+        app:showAsAction="never"
+        android:title="Edit">
+    </item>
+
+    <item
+        android:id="@+id/mi_all_words"
+        app:showAsAction="never"
+        android:title="All words">
+    </item>
+    <item
+        android:id="@+id/mi_settings"
+        app:showAsAction="never"
+        android:title="Settings">
+    </item>
+    <!--<item-->
+        <!--android:id="@+id/miMove"-->
+        <!--app:showAsAction="never"-->
+        <!--android:title="Move">-->
+    <!--</item>-->
+    <!--<item-->
+        <!--android:id="@+id/miTestType"-->
+        <!--app:showAsAction="never"-->
+        <!--android:title="Test type">-->
+    <!--</item>-->
+</menu>

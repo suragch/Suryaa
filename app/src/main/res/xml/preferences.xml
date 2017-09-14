@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="pref_night_mode"
+        android:title="Night mode"
+        android:defaultValue="false" />
+    <ListPreference
+        android:key="pref_font"
+        android:title="Font"
+        android:summary="%s"
+        android:dialogTitle="Font to display Mongolian text"
+        android:entries="@array/font_type_entries"
+        android:entryValues="@array/font_type_values"
+        android:defaultValue="@string/pref_font_type_default" />
+    <Preference
+        android:key="pref_about"
+        android:title="About">
+        <!--<intent-->
+            <!--android:action="android.intent.action.VIEW"-->
+            <!--android:targetPackage="net.studymongolian.suryaa"-->
+            <!--android:targetClass="net.studymongolian.suryaa.AboutActivity"/>-->
+    </Preference>
+</PreferenceScreen>

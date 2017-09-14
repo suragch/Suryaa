@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="font_type_entries">
+        <item>Printing</item>
+        <item>Handwriting</item>
+    </string-array>
+
+    <!-- These values are for internal use. Don't translate. -->
+    <string name="pref_font_type_default">printing</string>
+    <string-array name="font_type_values">
+        <item>printing</item>
+        <item>handwriting</item>
+    </string-array>
+
+    <string-array name="default_data_mongol">
+        <item>ᠰᠤᠷᠤᠶ᠎ᠠ</item>
+        <item>ᠰᠠᠢᠨ</item>
+        <item>ᠮᠣᠩᠭᠣᠯ</item>
+    </string-array>
+    <string-array name="default_data_definition">
+        <item>let\'s study</item>
+        <item>good</item>
+        <item>Mongol</item>
+    </string-array>
+    <string-array name="default_data_pronunciation">
+        <item>sʊrjaː</item>
+        <item>sæn</item>
+        <item>mɔŋgɔl</item>
+    </string-array>
+
+</resources>

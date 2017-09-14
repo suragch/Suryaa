@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Suryaa debug</string>
+    <string name="play_audio_content_description">play audio</string>
+    <string name="lists_activity_title">Word Lists</string>
+    <string name="add_word_activity_title">Add word</string>
+    <string name="record_audio_content_description">record audio</string>
+    <string name="all_words_activity_title">Words in current list</string>
+    <string name="settings_activity_title">Settings</string>
+    <string name="about_activity_title">About</string>
+
+    <!-- database -->
+    <string name="default_list_name">default list</string>
+
+</resources>

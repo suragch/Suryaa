@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="net.studymongolian.suryaa.MainActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:minHeight="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleTextColor="@android:color/primary_text_dark"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+    </android.support.v7.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/tv_number_of_words"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toolbar"
+        android:textColor="@color/textColorPrimary"
+        android:padding="10dp"
+        android:layout_alignParentRight="true"/>
+
+    <FrameLayout
+        android:id="@+id/button_panel"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/answer_button"
+            android:text="Answer"
+            android:textColor="@color/textColorPrimary"
+            android:visibility="visible"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onAnswerButtonClick"
+            android:layout_margin="10dp"
+            android:background="@drawable/btn_default"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <LinearLayout
+            android:id="@+id/answer_button_layout"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/response_button_1"
+                android:text="Again"
+                android:textColor="@color/textColorPrimary"
+                android:padding="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onResponseButtonClick"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/btn_default"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"/>
+
+            <TextView
+                android:id="@+id/response_button_2"
+                android:text="Day"
+                android:textColor="@color/textColorPrimary"
+                android:padding="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onResponseButtonClick"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/btn_default"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"/>
+
+            <TextView
+                android:id="@+id/response_button_3"
+                android:text="Week"
+                android:textColor="@color/textColorPrimary"
+                android:padding="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onResponseButtonClick"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/btn_default"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"/>
+
+            <TextView
+                android:id="@+id/response_button_4"
+                android:text="Month"
+                android:textColor="@color/textColorPrimary"
+                android:padding="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onResponseButtonClick"
+                android:layout_margin="10dp"
+                android:background="@drawable/btn_default"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"/>
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/content_layout"
+        android:orientation="horizontal"
+        android:layout_below="@id/toolbar"
+        android:layout_above="@id/button_panel"
+        android:paddingLeft="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <net.studymongolian.mongollibrary.MongolLabel
+            android:id="@+id/ml_mongol_vocab"
+            app:textSize="50sp"
+            app:textColor="@color/textColorPrimary"
+            android:layout_marginTop="10dp"
+            android:layout_width="0dp"
+            android:layout_weight=".2"
+            android:layout_height="match_parent" />
+
+        <ScrollView
+            android:id="@+id/answer_panel"
+            android:layout_width="0dp"
+            android:layout_weight=".8"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="30dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_definition"
+                    android:textSize="24sp"
+                    android:textColor="@color/textColorPrimary"
+                    android:paddingBottom="20dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/tv_pronunciation"
+                    android:textColor="@color/textColorPrimary"
+                    android:textSize="20sp"
+                    android:paddingBottom="20dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <ImageView
+                    android:id="@+id/ib_play_audio"
+                    style="@style/playButtonStyle"
+                    android:contentDescription="@string/play_audio_content_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+        </ScrollView>
+
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>

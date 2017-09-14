@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!--<item name="textColorPrimary">@color/textColorPrimary</item>-->
+
+        <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeBackground">@color/colorPrimary</item>
+        <item name="actionBarPopupTheme">@style/ActionModeOverflowMenu</item>
+    </style>
+
+    <style name="ActionModeOverflowMenu" parent="Widget.AppCompat.ListPopupWindow">
+        <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="android:background">@color/cardAndDialogColor</item>
+    </style>
+
+    <style name="playButtonStyle" parent="AppTheme">
+        <item name="android:background">@drawable/ic_play_circle_filled_black_48dp</item>
+    </style>
+
+</resources>
