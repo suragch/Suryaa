@@ -343,7 +343,7 @@ public class AddEditWordActivity extends AppCompatActivity {
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
                 if (item.getList() <= 0) {
                     // make a new list
-                    String listName = "list";
+                    String listName = "list"; // FIXME this is adding lists incorrectly sometimes
                     long listId = dbAdapter.createNewList(listName);
                     item.setList(listId);
                 }
@@ -356,7 +356,13 @@ public class AddEditWordActivity extends AppCompatActivity {
             if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFileName())) {
                 File destFile = new File(getExternalFilesDir(null).getAbsolutePath() + "/"
                         + item.getList() + "/" + item.getAudioFileName());
-                FileUtils.copyFile(mTempAudioFilePathName, destFile);
+
+                try {
+                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
+                } catch (IOException e) {
+                    Log.i("testing", "doInBackground: IOException");
+                    e.printStackTrace();
+                }
             }
 
             return null;
@@ -394,7 +400,12 @@ public class AddEditWordActivity extends AppCompatActivity {
             if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFileName())) {
                 File destFile = new File(getExternalFilesDir(null).getAbsolutePath() + "/"
                         + item.getList() + "/" + item.getAudioFileName());
-                FileUtils.copyFile(mTempAudioFilePathName, destFile);
+                try {
+                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
+                } catch (IOException e) {
+                    Log.i("testing", "doInBackground: IOException");
+                    e.printStackTrace();
+                }
             }
             return null;
         }

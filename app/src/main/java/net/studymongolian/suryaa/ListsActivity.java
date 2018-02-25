@@ -476,6 +476,7 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 result = FileUtils.exportList(appContext, allVocabInList, list.getName(), sourceFolder);
 
             } catch (Exception e) {
+                Log.i("testing", "doInBackground: FileUtils.exportList threw an exception");
                 Log.i("app", e.toString());
                 result = false;
             }

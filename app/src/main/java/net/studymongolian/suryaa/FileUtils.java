@@ -5,24 +5,22 @@ import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+
 // adapted from https://www.mkyong.com/java/how-to-read-and-parse-csv-file-in-java/
 
 
-public class FileUtils {
+class FileUtils {
 
     private static final String APP_PUBLIC_FOLDER_NAME = "Suryaa";
     private static final char DEFAULT_SEPARATOR = ',';
@@ -31,60 +29,69 @@ public class FileUtils {
     static final String AUDIO_FILE_EXTENSION = ".3gp";
     static final String EXPORT_IMPORT_FILE_EXTENSION = ".csv";
 
-    public static boolean exportList(
+    static boolean exportList(
             Context context,
             List<Vocab> items,
             String listName,
             File sourceAudioFolder) throws Exception {
 
-        if (!isExternalStorageWritable()) {
-            throw new IOException("External storage is not available");
-        }
-
         String underscoredListName = listName.replace(' ', '_');
 
         // make sure the directory exists
         File destFolder = new File(getAppPublicStorageDirectory(), underscoredListName);
-        if (!destFolder.exists()) {
+        if (!destFolder.exists())
             destFolder.mkdirs();
-        }
+
 
         // build the csv text and copy audio files
         StringBuilder content = new StringBuilder();
         for (Vocab item : items) {
-            String mongol = item.getMongol().replace("\"", "\"\"");
-            content.append("\"").append(mongol).append("\",");
-            String definition = item.getDefinition().replace("\"", "\"\"");
-            content.append("\"").append(definition).append("\",");
-            String pronunciation = item.getPronunciation().replace("\"", "\"\"");
-            content.append("\"").append(pronunciation).append("\",");
-            String audio = item.getAudioFileName();
-            if (!TextUtils.isEmpty(audio)) {
-                File source = new File(sourceAudioFolder, audio);
-                if (source.exists()) {
-                    content.append("\"").append(audio).append("\"");
-                    copyFile(source, new File(destFolder, audio));
-                }
-            }
+            String row = convertToCvsRow(item);
+            content.append(row);
             content.append("\n");
+            copyAudioFileOver(context, item, sourceAudioFolder, destFolder);
         }
+        String csvFileName = underscoredListName + EXPORT_IMPORT_FILE_EXTENSION;
+        copyCsvFileOver(context, destFolder, csvFileName, content.toString());
+        return true;
+    }
 
-        File csvFile = new File(destFolder, underscoredListName + EXPORT_IMPORT_FILE_EXTENSION);
+    private static void copyCsvFileOver(Context context, File destFolder, String fileName, String content) throws IOException {
+        File csvFile = new File(destFolder, fileName);
         FileOutputStream fileOutput = new FileOutputStream(csvFile);
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutput);
-        outputStreamWriter.write(content.toString());
+        outputStreamWriter.write(content);
         outputStreamWriter.flush();
         fileOutput.getFD().sync();
         outputStreamWriter.close();
+        scanFile(context, csvFile);
+    }
 
-        // notify file managers of the change
-        MediaScannerConnection.scanFile(
-                context,
-                new String[]{csvFile.getAbsolutePath()},
-                null,
-                null);
+    private static void copyAudioFileOver(Context context, Vocab item, File sourceAudioFolder, File destFolder) throws IOException {
+        String audio = item.getAudioFileName();
+        if (TextUtils.isEmpty(audio)) return;
+        File source = new File(sourceAudioFolder, audio);
+        File dest = new File(destFolder, audio);
+        copyFile(source, dest);
+        scanFile(context, dest);
+    }
 
-        return true;
+    private static String convertToCvsRow(Vocab item) {
+        String mongol = item.getMongol().replace("\"", "\"\"");
+        String definition = item.getDefinition().replace("\"", "\"\"");
+        String pronunciation = item.getPronunciation().replace("\"", "\"\"");
+        String audio = item.getAudioFileName();
+        String content = "\"" + mongol + "\"," +
+                "\"" + definition + "\"," +
+                "\"" + pronunciation + "\"," +
+                "\"" + audio + "\"";
+        return content;
+    }
+
+    private static void scanFile(Context context, File file) {
+        MediaScannerConnection
+                .scanFile(context, new String[] {file.getAbsolutePath()},
+                        null, null);
     }
 
     private static String getAppPublicStorageDirectory() {
@@ -211,38 +218,67 @@ public class FileUtils {
         return result;
     }
 
-    static void copyFile(File sourceFilePathName, File destFileFilePathName) {
-        InputStream in;
-        OutputStream out;
+    static void copyFile(File sourceFile, File destFile) throws IOException {
+        if (!destFile.getParentFile().exists())
+            destFile.getParentFile().mkdirs();
+
+        if (!destFile.exists()) {
+            destFile.createNewFile();
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+
         try {
-
-            //create output directory if it doesn't exist
-            if (!destFileFilePathName.exists()) {
-                destFileFilePathName.getParentFile().mkdirs();
+            source = new FileInputStream(sourceFile).getChannel();
+            destination = new FileOutputStream(destFile).getChannel();
+            destination.transferFrom(source, 0, source.size());
+        } finally {
+            if (source != null) {
+                source.close();
             }
-
-
-            in = new FileInputStream(sourceFilePathName);
-            out = new FileOutputStream(destFileFilePathName);
-
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
+            if (destination != null) {
+                destination.close();
             }
-            in.close();
-            in = null;
-
-            // write the output file (You have now copied the file)
-            out.flush();
-            out.close();
-            out = null;
-
-        } catch (FileNotFoundException fnfe1) {
-            Log.e("tag", fnfe1.getMessage());
-        } catch (Exception e) {
-            Log.e("tag", e.getMessage());
         }
     }
+
+//    static void copyFile(File sourceFilePathName, File destFileFilePathName) {
+//        Log.i(TAG, "copyFile: starting to copy " + sourceFilePathName + " to " + destFileFilePathName);
+//        InputStream in;
+//        OutputStream out;
+//        try {
+//
+//            //create output directory if it doesn't exist
+//            if (!destFileFilePathName.exists()) {
+//                destFileFilePathName.getParentFile().mkdirs();
+//            }
+//
+//
+//            in = new FileInputStream(sourceFilePathName);
+//            out = new FileOutputStream(destFileFilePathName);
+//
+//            byte[] buffer = new byte[1024];
+//            int read;
+//            while ((read = in.read(buffer)) != -1) {
+//                out.write(buffer, 0, read);
+//            }
+//            in.close();
+//            in = null;
+//
+//            // write the output file (You have now copied the file)
+//            out.flush();
+//            out.close();
+//            out = null;
+//            Log.i(TAG, "copyFile: copy seemed to finish OK");
+//
+//        } catch (FileNotFoundException fnfe1) {
+//            Log.i(TAG, "copyFile: FileNotFoundException");
+//            Log.e("tag", fnfe1.getMessage());
+//        } catch (Exception e) {
+//            Log.i(TAG, "copyFile: FileNotFoundException");
+//            Log.e("tag", e.getMessage());
+//        }
+//    }
 
 }
