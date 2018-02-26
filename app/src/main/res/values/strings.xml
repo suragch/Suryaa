@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Suryaa debug</string>
+    <string name="app_name">Suryaa</string>
     <string name="play_audio_content_description">play audio</string>
     <string name="lists_activity_title">Word Lists</string>
     <string name="add_word_activity_title">Add word</string>

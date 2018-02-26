@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import net.studymongolian.suryaa.database.DatabaseManager;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;

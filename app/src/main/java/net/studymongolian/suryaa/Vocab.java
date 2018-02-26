@@ -1,6 +1,6 @@
 package net.studymongolian.suryaa;
 
-class Vocab {
+public class Vocab {
 
     private long id;
     private long date;
@@ -10,7 +10,7 @@ class Vocab {
     private String pronunciation;
     private String audioFileName;
 
-    Vocab() {
+    public Vocab() {
         this.id=0;
         this.date=0;
         this.listId=0;
@@ -21,61 +21,61 @@ class Vocab {
     }
 
     // getters
-    long getId() {
+    public long getId() {
         return id;
     }
 
-    long getDate() {
+    public long getDate() {
         return date;
     }
 
-    long getList() {
+    public long getList() {
         return listId;
     }
 
-    String getMongol() {
+    public String getMongol() {
         return mongol;
     }
 
-    String getDefinition() {
+    public String getDefinition() {
         return definition;
     }
 
-    String getPronunciation() {
+    public String getPronunciation() {
         return pronunciation;
     }
 
-    String getAudioFileName() {
+    public String getAudioFileName() {
         return audioFileName;
     }
 
 
     // setters
-    void setId(long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    void setDate(long date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
-    void setList(long listId) {
+    public void setList(long listId) {
         this.listId = listId;
     }
 
-    void setMongol(String mongol) {
+    public void setMongol(String mongol) {
         this.mongol = (mongol != null) ? mongol : "";
     }
 
-    void setDefinition(String definition) {
+    public void setDefinition(String definition) {
         this.definition = (definition != null) ? definition : "";
     }
 
-    void setPronunciation(String pronunciation) {
+    public void setPronunciation(String pronunciation) {
         this.pronunciation = (pronunciation != null) ? pronunciation : "";
     }
 
-    void setAudioFileName(String audioLocation) {
+    public void setAudioFileName(String audioLocation) {
         this.audioFileName = (audioLocation != null) ? audioLocation : "";
     }
 

@@ -29,6 +29,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import net.studymongolian.suryaa.database.DatabaseManager;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

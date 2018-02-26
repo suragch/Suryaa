@@ -39,8 +39,10 @@ class FileUtils {
 
         // make sure the directory exists
         File destFolder = new File(getAppPublicStorageDirectory(), underscoredListName);
-        if (!destFolder.exists())
+        if (!destFolder.exists()) {
             destFolder.mkdirs();
+            scanFile(context, destFolder);
+        }
 
 
         // build the csv text and copy audio files
@@ -89,6 +91,7 @@ class FileUtils {
     }
 
     private static void scanFile(Context context, File file) {
+        // this registers the file so that file explorers can find it more quickly
         MediaScannerConnection
                 .scanFile(context, new String[] {file.getAbsolutePath()},
                         null, null);
