@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import net.studymongolian.suryaa.StudyMode;
 import net.studymongolian.suryaa.Vocab;
 import net.studymongolian.suryaa.VocabList;
 
@@ -24,7 +25,6 @@ public class DatabaseManager {
 
     public DatabaseManager(Context context) {
         this.mHelper = new DatabaseHelper(context);
-        //this.mContext = context;
     }
 
 
@@ -34,33 +34,26 @@ public class DatabaseManager {
 
         SQLiteDatabase db = mHelper.getReadableDatabase();
         String[] columns = {
-                VocabEntry.VOCAB_ID,
-                VocabEntry.NEXT_PRACTICE_DATE,
+                VocabEntry.ID,
                 VocabEntry.MONGOL,
                 VocabEntry.DEFINITION,
-                VocabEntry.PRONUNCIATION,
-                VocabEntry.AUDIO_FILE};
-        String selection = VocabEntry.LIST + " LIKE ?";
+                VocabEntry.PRONUNCIATION};
+        String selection = VocabEntry.LIST_ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(listId)};
-        String orderBy = VocabEntry.NEXT_PRACTICE_DATE + " DESC";
         Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs,
-                null, null, orderBy, null);
-        int indexId = cursor.getColumnIndex(VocabEntry.VOCAB_ID);
-        int indexDate = cursor.getColumnIndex(VocabEntry.NEXT_PRACTICE_DATE);
+                null, null, null, null);
+        int indexId = cursor.getColumnIndex(VocabEntry.ID);
         int indexMongol = cursor.getColumnIndex(VocabEntry.MONGOL);
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
-        int indexAudioLocation = cursor.getColumnIndex(VocabEntry.AUDIO_FILE);
 
         while (cursor.moveToNext()) {
             Vocab vocabItem = new Vocab();
             vocabItem.setId(cursor.getLong(indexId));
-            vocabItem.setDate(cursor.getLong(indexDate));
-            vocabItem.setList(listId);
+            vocabItem.setListId(listId);
             vocabItem.setMongol(cursor.getString(indexMongol));
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
-            vocabItem.setAudioFileName(cursor.getString(indexAudioLocation));
             vocabList.add(vocabItem);
         }
 
@@ -70,7 +63,7 @@ public class DatabaseManager {
         return vocabList;
     }
 
-    public Queue<Vocab> getTodaysVocab(long listId) {
+    public Queue<Vocab> getTodaysVocab(long listId, StudyMode studyMode) {
 
         Queue<Vocab> vocabList = new LinkedList<>();
 
@@ -85,36 +78,47 @@ public class DatabaseManager {
         long midnightTonight = date.getTimeInMillis();
 
 
+        String nextPracticeDateColumn = getNextPracticeDateColumnName(studyMode);
+        String nthTryColumn = getNthTryColumnName(studyMode);
+        String intervalColumn = getIntervalColumnName(studyMode);
+        String eFactorColumn = getEasinessFactorColumnName(studyMode);
         SQLiteDatabase db = mHelper.getReadableDatabase();
         String[] columns = {
-                VocabEntry.VOCAB_ID,
-                VocabEntry.NEXT_PRACTICE_DATE,
+                VocabEntry.ID,
                 VocabEntry.MONGOL,
                 VocabEntry.DEFINITION,
                 VocabEntry.PRONUNCIATION,
-                VocabEntry.AUDIO_FILE};
-        String selection = VocabEntry.LIST + " LIKE ? AND " +
-                VocabEntry.NEXT_PRACTICE_DATE + " < " + midnightTonight;
+                nextPracticeDateColumn,
+                nthTryColumn,
+                intervalColumn,
+                eFactorColumn
+        };
+        String selection = VocabEntry.LIST_ID + " LIKE ? AND " +
+                nextPracticeDateColumn + " < " + midnightTonight;
         String[] selectionArgs = {String.valueOf(listId)};
-        String orderBy = VocabEntry.NEXT_PRACTICE_DATE;
-        Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs, null,
-                null, orderBy, null);
-        int indexId = cursor.getColumnIndex(VocabEntry.VOCAB_ID);
-        int indexDate = cursor.getColumnIndex(VocabEntry.NEXT_PRACTICE_DATE);
+        String orderBy = nextPracticeDateColumn;
+        Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs,
+                null,null, orderBy, null);
+        int indexId = cursor.getColumnIndex(VocabEntry.ID);
         int indexMongol = cursor.getColumnIndex(VocabEntry.MONGOL);
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
-        int indexAudioLocation = cursor.getColumnIndex(VocabEntry.AUDIO_FILE);
+        int indexDate = cursor.getColumnIndex(nextPracticeDateColumn);
+        int indexNthTry = cursor.getColumnIndex(nthTryColumn);
+        int indexInterval = cursor.getColumnIndex(intervalColumn);
+        int indexEF = cursor.getColumnIndex(eFactorColumn);
 
         while (cursor.moveToNext()) {
             Vocab vocabItem = new Vocab();
             vocabItem.setId(cursor.getLong(indexId));
-            vocabItem.setDate(cursor.getLong(indexDate));
-            vocabItem.setList(listId);
+            vocabItem.setListId(listId);
             vocabItem.setMongol(cursor.getString(indexMongol));
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
-            vocabItem.setAudioFileName(cursor.getString(indexAudioLocation));
+            vocabItem.setNextPracticeDate(cursor.getLong(indexDate));
+            vocabItem.setNthTry(cursor.getInt(indexNthTry));
+            vocabItem.setInterval(cursor.getInt(indexInterval));
+            vocabItem.setEasinessFactor(cursor.getFloat(indexEF));
             vocabList.add(vocabItem);
         }
 
@@ -125,39 +129,95 @@ public class DatabaseManager {
 
     }
 
-    public Vocab getVocabItem(long vocabId) {
+    private String getNextPracticeDateColumnName(StudyMode studyMode) {
+        switch (studyMode) {
+            case DEFINITION:
+                return VocabEntry.DEFINITION_NEXT_PRACTICE_DATE;
+            case PRONUNCIATION:
+                return VocabEntry.PRONUNCIATION_NEXT_PRACTICE_DATE;
+            default:
+                return VocabEntry.MONGOL_NEXT_PRACTICE_DATE;
+        }
+    }
+
+    private String getNthTryColumnName(StudyMode studyMode) {
+        switch (studyMode) {
+            case DEFINITION:
+                return VocabEntry.DEFINITION_NTH_TRY;
+            case PRONUNCIATION:
+                return VocabEntry.PRONUNCIATION_NTH_TRY;
+            default:
+                return VocabEntry.MONGOL_NTH_TRY;
+        }
+    }
+
+    private String getIntervalColumnName(StudyMode studyMode) {
+        switch (studyMode) {
+            case DEFINITION:
+                return VocabEntry.DEFINITION_INTERVAL;
+            case PRONUNCIATION:
+                return VocabEntry.PRONUNCIATION_INTERVAL;
+            default:
+                return VocabEntry.MONGOL_INTERVAL;
+        }
+    }
+
+    private String getEasinessFactorColumnName(StudyMode studyMode) {
+        switch (studyMode) {
+            case DEFINITION:
+                return VocabEntry.DEFINITION_EF;
+            case PRONUNCIATION:
+                return VocabEntry.PRONUNCIATION_EF;
+            default:
+                return VocabEntry.MONGOL_EF;
+        }
+    }
+
+    public Vocab getVocabItem(long vocabId, StudyMode studyMode) {
+
+        String nextPracticeDateColumn = getNextPracticeDateColumnName(studyMode);
+        String nthTryColumn = getNthTryColumnName(studyMode);
+        String intervalColumn = getIntervalColumnName(studyMode);
+        String eFactorColumn = getEasinessFactorColumnName(studyMode);
 
         SQLiteDatabase db = mHelper.getReadableDatabase();
         String[] columns = {
-                VocabEntry.VOCAB_ID,
-                VocabEntry.NEXT_PRACTICE_DATE,
-                VocabEntry.LIST,
+                VocabEntry.ID,
+                VocabEntry.LIST_ID,
                 VocabEntry.MONGOL,
                 VocabEntry.DEFINITION,
                 VocabEntry.PRONUNCIATION,
-                VocabEntry.AUDIO_FILE};
-        String selection = VocabEntry.VOCAB_ID + " LIKE ?";
+                nextPracticeDateColumn,
+                nthTryColumn,
+                intervalColumn,
+                eFactorColumn
+        };
+        String selection = VocabEntry.ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(vocabId)};
         Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs,
                 null, null, null, null);
 
-        int indexId = cursor.getColumnIndex(VocabEntry.VOCAB_ID);
-        int indexDate = cursor.getColumnIndex(VocabEntry.NEXT_PRACTICE_DATE);
-        int indexList = cursor.getColumnIndex(VocabEntry.LIST);
+        int indexId = cursor.getColumnIndex(VocabEntry.ID);
+        int indexListId = cursor.getColumnIndex(VocabEntry.LIST_ID);
         int indexMongol = cursor.getColumnIndex(VocabEntry.MONGOL);
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
-        int indexAudioLocation = cursor.getColumnIndex(VocabEntry.AUDIO_FILE);
+        int indexDate = cursor.getColumnIndex(nextPracticeDateColumn);
+        int indexNthTry = cursor.getColumnIndex(nthTryColumn);
+        int indexInterval = cursor.getColumnIndex(intervalColumn);
+        int indexEF = cursor.getColumnIndex(eFactorColumn);
 
         Vocab vocabItem = new Vocab();
         if (cursor.moveToFirst()) {
             vocabItem.setId(cursor.getLong(indexId));
-            vocabItem.setDate(cursor.getLong(indexDate));
-            vocabItem.setList(cursor.getLong(indexList));
+            vocabItem.setListId(cursor.getLong(indexListId));
             vocabItem.setMongol(cursor.getString(indexMongol));
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
-            vocabItem.setAudioFileName(cursor.getString(indexAudioLocation));
+            vocabItem.setNextPracticeDate(cursor.getLong(indexDate));
+            vocabItem.setNthTry(cursor.getInt(indexNthTry));
+            vocabItem.setInterval(cursor.getInt(indexInterval));
+            vocabItem.setEasinessFactor(cursor.getFloat(indexEF));
         }
 
         cursor.close();
@@ -269,9 +329,6 @@ public class DatabaseManager {
 
     public int deleteList(long rowId) {
 
-        // NOTE: this does not delete the audio files
-        // You should delete the audio files separately
-
         SQLiteDatabase db = mHelper.getWritableDatabase();
 
         // delete from List Table
@@ -280,7 +337,7 @@ public class DatabaseManager {
         int count = db.delete(ListsEntry.LIST_TABLE, whereClause, whereArgs);
 
         // delete from vocab table
-        whereClause = VocabEntry.LIST + " =?";
+        whereClause = VocabEntry.LIST_ID + " =?";
         db.delete(VocabEntry.VOCAB_TABLE, whereClause, whereArgs);
 
         db.close();
@@ -289,21 +346,11 @@ public class DatabaseManager {
 
     public long addVocabItem(Vocab entry) {
 
-        long date = System.currentTimeMillis();
-
         ContentValues contentValues = new ContentValues();
-        contentValues.put(VocabEntry.NEXT_PRACTICE_DATE, date);
-        contentValues.put(VocabEntry.LIST, entry.getList());
+        contentValues.put(VocabEntry.LIST_ID, entry.getListId());
         contentValues.put(VocabEntry.MONGOL, entry.getMongol());
-        if (!TextUtils.isEmpty(entry.getDefinition())) {
-            contentValues.put(VocabEntry.DEFINITION, entry.getDefinition());
-        }
-        if (!TextUtils.isEmpty(entry.getPronunciation())) {
-            contentValues.put(VocabEntry.PRONUNCIATION, entry.getPronunciation());
-        }
-        if (!TextUtils.isEmpty(entry.getAudioFileName())) {
-            contentValues.put(VocabEntry.AUDIO_FILE, entry.getAudioFileName());
-        }
+        contentValues.put(VocabEntry.DEFINITION, entry.getDefinition());
+        contentValues.put(VocabEntry.PRONUNCIATION, entry.getPronunciation());
 
         SQLiteDatabase db = mHelper.getWritableDatabase();
         long id = db.insertOrThrow(VocabEntry.VOCAB_TABLE, null, contentValues);
@@ -312,27 +359,17 @@ public class DatabaseManager {
     }
 
     public void bulkInsert(List<Vocab> vocabItems) {
-        long date = System.currentTimeMillis();
 
         SQLiteDatabase db = mHelper.getWritableDatabase();
         db.beginTransaction();
         try {
-            ContentValues values = new ContentValues();
+            ContentValues contentValues = new ContentValues();
             for (Vocab item : vocabItems) {
-                values.put(VocabEntry.NEXT_PRACTICE_DATE, date);
-                values.put(VocabEntry.LIST, item.getList());
-                values.put(VocabEntry.MONGOL, item.getMongol());
-                //values.put(VocabEntry.MONGOL, item.getMongol());
-                if (!TextUtils.isEmpty(item.getDefinition())) {
-                    values.put(VocabEntry.DEFINITION, item.getDefinition());
-                }
-                if (!TextUtils.isEmpty(item.getPronunciation())) {
-                    values.put(VocabEntry.PRONUNCIATION, item.getPronunciation());
-                }
-                if (!TextUtils.isEmpty(item.getAudioFileName())) {
-                    values.put(VocabEntry.AUDIO_FILE, item.getAudioFileName());
-                }
-                db.insert(VocabEntry.VOCAB_TABLE, null, values);
+                contentValues.put(VocabEntry.LIST_ID, item.getListId());
+                contentValues.put(VocabEntry.MONGOL, item.getMongol());
+                contentValues.put(VocabEntry.DEFINITION, item.getDefinition());
+                contentValues.put(VocabEntry.PRONUNCIATION, item.getPronunciation());
+                db.insert(VocabEntry.VOCAB_TABLE, null, contentValues);
             }
             db.setTransactionSuccessful();
         } catch (SQLException e) {
@@ -345,15 +382,23 @@ public class DatabaseManager {
 
     public int updateVocabItem(Vocab updatedItem) {
 
+        StudyMode studyMode = updatedItem.getStudyMode();
+        String nextPracticeDateColumn = getNextPracticeDateColumnName(studyMode);
+        String nthTryColumn = getNthTryColumnName(studyMode);
+        String intervalColumn = getIntervalColumnName(studyMode);
+        String eFactorColumn = getEasinessFactorColumnName(studyMode);
+
         ContentValues contentValues = new ContentValues();
-        contentValues.put(VocabEntry.NEXT_PRACTICE_DATE, updatedItem.getDate());
-        contentValues.put(VocabEntry.LIST, updatedItem.getList());
+        contentValues.put(VocabEntry.LIST_ID, updatedItem.getListId());
         contentValues.put(VocabEntry.MONGOL, updatedItem.getMongol());
         contentValues.put(VocabEntry.DEFINITION, updatedItem.getDefinition());
         contentValues.put(VocabEntry.PRONUNCIATION, updatedItem.getPronunciation());
-        contentValues.put(VocabEntry.AUDIO_FILE, updatedItem.getAudioFileName());
+        contentValues.put(nextPracticeDateColumn, updatedItem.getNextPracticeDate());
+        contentValues.put(nthTryColumn, updatedItem.getNthTry());
+        contentValues.put(intervalColumn, updatedItem.getInterval());
+        contentValues.put(eFactorColumn, updatedItem.getEasinessFactor());
 
-        String selection = VocabEntry.VOCAB_ID + " LIKE ?";
+        String selection = VocabEntry.ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(updatedItem.getId())};
 
         SQLiteDatabase db = mHelper.getWritableDatabase();
@@ -365,13 +410,12 @@ public class DatabaseManager {
     public int deleteVocabItem(long rowId) {
 
         SQLiteDatabase db = mHelper.getWritableDatabase();
-        String whereClause = VocabEntry.VOCAB_ID + " =?";
+        String whereClause = VocabEntry.ID + " =?";
         String[] whereArgs = {Long.toString(rowId)};
         int count = db.delete(VocabEntry.VOCAB_TABLE, whereClause, whereArgs);
         db.close();
         return count;
     }
-
 
 
 }

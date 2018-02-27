@@ -4,25 +4,61 @@ public class VocabEntry {
 
     // Vocab table
     static final String VOCAB_TABLE = "vocab";
+
     // Column names
-    static final String VOCAB_ID = "_id";
-    static final String NEXT_PRACTICE_DATE = "date";
-    static final String LIST = "list_id";
+
+    static final String ID = "_id";
+    static final String LIST_ID = "list_id";
     static final String MONGOL = "mongol";
     static final String DEFINITION = "definition";
     static final String PRONUNCIATION = "pronunciation";
-    static final String AUDIO_FILE = "audio";
+    static final String AUDIO = "audio";
+    static final String MONGOL_NEXT_PRACTICE_DATE = "mongol_next_practice_date";
+    static final String MONGOL_NTH_TRY = "mongol_nth_try";
+    static final String MONGOL_INTERVAL = "mongol_interval";
+    static final String MONGOL_EF = "mongol_easiness_factor";
+    static final String DEFINITION_NEXT_PRACTICE_DATE = "definition_next_practice_date";
+    static final String DEFINITION_NTH_TRY = "definition_nth_try";
+    static final String DEFINITION_INTERVAL = "definition_interval";
+    static final String DEFINITION_EF = "definition_easiness_factor";
+    static final String PRONUNCIATION_NEXT_PRACTICE_DATE = "pronunciation_next_practice_date";
+    static final String PRONUNCIATION_NTH_TRY = "pronunciation_nth_try";
+    static final String PRONUNCIATION_INTERVAL = "pronunciation_interval";
+    static final String PRONUNCIATION_EF = "pronunciation_easiness_factor";
+
+    private static final int DEFAULT_NEXT_PRACTICE_DATE = 0;
+    private static final int DEFAULT_NTH_TRY = 1;
+    private static final int DEFAULT_INTERVAL = 1;
+    private static final float DEFAULT_EASINESS_FACTOR = 2.5f;
+
+//    static final String VOCAB_ID = "_id";
+//    static final String NEXT_PRACTICE_DATE = "date";
+//    static final String LIST = "list_id";
+//    static final String MONGOL = "mongol";
+//    static final String DEFINITION = "definition";
+//    static final String PRONUNCIATION = "pronunciation";
+//    static final String AUDIO_FILE = "audio";
+
     // SQL statements
     static final String CREATE_VOCAB_TABLE = "CREATE TABLE " + VOCAB_TABLE + " ("
-            + VOCAB_ID + " INTEGER PRIMARY KEY,"
-            + NEXT_PRACTICE_DATE + " INTEGER,"
-            + LIST + " TEXT NOT NULL,"
-            + MONGOL + " TEXT NOT NULL,"
+            + ID + " INTEGER PRIMARY KEY,"
+            + LIST_ID + " INTEGER NOT NULL,"
+            + MONGOL + " TEXT,"
             + DEFINITION + " TEXT,"
             + PRONUNCIATION + " TEXT,"
-            + AUDIO_FILE + " TEXT,"
-            + "FOREIGN KEY(" + LIST + ") REFERENCES " + ListsEntry.LIST_TABLE + "(" + ListsEntry.LIST_ID + "))";
-    static final String DROP_VOCAB_TABLE = "DROP TABLE IF EXISTS "
-            + VOCAB_TABLE;
+            + AUDIO + " BLOB,"
+            + MONGOL_NEXT_PRACTICE_DATE + " INTEGER DEFAULT " + DEFAULT_NEXT_PRACTICE_DATE + ","
+            + MONGOL_NTH_TRY + " INTEGER DEFAULT " + DEFAULT_NTH_TRY + ","
+            + MONGOL_INTERVAL + " INTEGER DEFAULT " + DEFAULT_INTERVAL + ","
+            + MONGOL_EF + " REAL DEFAULT " + DEFAULT_EASINESS_FACTOR + ","
+            + DEFINITION_NEXT_PRACTICE_DATE + " INTEGER DEFAULT " + DEFAULT_NEXT_PRACTICE_DATE + ","
+            + DEFINITION_NTH_TRY + " INTEGER DEFAULT " + DEFAULT_NTH_TRY + ","
+            + DEFINITION_INTERVAL + " INTEGER DEFAULT " + DEFAULT_INTERVAL + ","
+            + DEFINITION_EF + " REAL DEFAULT " + DEFAULT_EASINESS_FACTOR + ","
+            + PRONUNCIATION_NEXT_PRACTICE_DATE + " INTEGER DEFAULT " + DEFAULT_NEXT_PRACTICE_DATE + ","
+            + PRONUNCIATION_NTH_TRY + " INTEGER DEFAULT " + DEFAULT_NTH_TRY + ","
+            + PRONUNCIATION_INTERVAL + " INTEGER DEFAULT " + DEFAULT_INTERVAL + ","
+            + PRONUNCIATION_EF + " REAL DEFAULT " + DEFAULT_EASINESS_FACTOR + ","
+            + "FOREIGN KEY(" + LIST_ID + ") REFERENCES " + ListsEntry.LIST_TABLE + "(" + ListsEntry.LIST_ID + "))";
 
 }

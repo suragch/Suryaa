@@ -24,7 +24,6 @@ class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = DatabaseHelper.class.getName();
 
 
-
     private final Context context;
 
     DatabaseHelper(Context context) {
@@ -48,18 +47,65 @@ class DatabaseHelper extends SQLiteOpenHelper {
         // method from https://riggaroo.co.za/android-sqlite-database-use-onupgrade-correctly/
         Log.e(TAG, "Updating database from " + oldVersion + " to " + newVersion);
         // For database upgrade add file like from_1_to_2.sql to the assets folder
-        try {
-            String relativePath = "databases/suryaa/";
-            for (int i = oldVersion; i < newVersion; ++i) {
-                String migrationName = String.format("from_%d_to_%d.sql", i, (i + 1));
-                String pathName = relativePath + migrationName;
-                readAndExecuteSQLScript(db, context, pathName);
-            }
-        } catch (Exception exception) {
-            Log.e(TAG, "Exception running upgrade script:", exception);
+
+        switch (oldVersion) {
+            case 1:
+                readAndExecuteSQLScript(db, context, "from_1_to_2.sql");
+
+                // don't include break statement between version numbers
+                // so that the updates are run cumulatively (https://stackoverflow.com/a/8133640)
+            default:
+                break;
+
         }
 
+
     }
+
+//    private void upgradeFromOneToTwo(SQLiteDatabase db) {
+//        // update table schema
+//        readAndExecuteSQLScript(db, context, "from_1_to_2.sql");
+//
+//
+//
+//    }
+
+//    private class UpgradeFromOneToTwo extends AsyncTask<SQLiteDatabase, Void, Void> {
+//
+//        private static final String SQL_UPGRADE_SCRIPT = "from_1_to_2.sql";
+//
+//        @Override
+//        protected Void doInBackground(SQLiteDatabase... params) {
+//
+//            SQLiteDatabase db = params[0];
+//
+//            try {
+//
+//                // update table schema
+//                readAndExecuteSQLScript(db, context, SQL_UPGRADE_SCRIPT);
+//
+//                // put audio files as BLOB data in db
+//                String[] columns = {"_id", "audio_filename"};
+//                String selection = "audio_filename IS NOT NULL AND audio_filename != \"\"";
+//                Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection,
+//                        null,null, null, null, null);
+//                int indexId = cursor.getColumnIndex("_id");
+//                int indexAudio = cursor.getColumnIndex("audio_filename");
+//
+//                while (cursor.moveToNext()) {
+//                    int id = cursor.getInt(indexId);
+//                    String filename = cursor.getString(indexAudio);
+//                }
+//
+//                cursor.close();
+//
+//            } catch (Exception exception) {
+//                Log.e(TAG, "Exception running upgrade script: ", exception);
+//            }
+//
+//            return null;
+//        }
+//    }
 
     private void readAndExecuteSQLScript(SQLiteDatabase db, Context ctx, String fileName) {
         if (TextUtils.isEmpty(fileName)) {
@@ -121,11 +167,13 @@ class DatabaseHelper extends SQLiteOpenHelper {
         contentValues = new ContentValues();
         long date = System.currentTimeMillis();
         for (int i = 0; i < numberOfItems; i++) {
-            contentValues.put(VocabEntry.NEXT_PRACTICE_DATE, date);
-            contentValues.put(VocabEntry.LIST, listId);
+            contentValues.put(VocabEntry.LIST_ID, listId);
             contentValues.put(VocabEntry.MONGOL, mongolEntries[i]);
             contentValues.put(VocabEntry.DEFINITION, definitions[i]);
             contentValues.put(VocabEntry.PRONUNCIATION, pronunciations[i]);
+            contentValues.put(VocabEntry.MONGOL_NEXT_PRACTICE_DATE, date);
+            contentValues.put(VocabEntry.DEFINITION_NEXT_PRACTICE_DATE, date);
+            contentValues.put(VocabEntry.PRONUNCIATION_NEXT_PRACTICE_DATE, date);
             db.insert(VocabEntry.VOCAB_TABLE, null, contentValues);
             date++;
         }
