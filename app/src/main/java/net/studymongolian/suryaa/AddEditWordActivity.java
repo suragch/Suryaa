@@ -43,6 +43,7 @@ public class AddEditWordActivity extends AppCompatActivity {
     static final String WORD_ID_KEY = "word_id";
     static final String EDIT_MODE_KEY = "edit_mode";
     static final String WORDS_ADDED_KEY = "words_added";
+    private static final String TAG = "AddEditWordActivity";
     private boolean wordsWereAdded = false;
 
     private static final String LOG_TAG = "AddEditWordActivity";
@@ -62,6 +63,7 @@ public class AddEditWordActivity extends AppCompatActivity {
 
     private long mCurrentListId;
     private Vocab mEditingWord;
+    private StudyMode mStudyMode = StudyMode.MONGOL;
 
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
@@ -148,7 +150,7 @@ public class AddEditWordActivity extends AppCompatActivity {
             try {
                 String dataSource = mTempAudioFilePathName.getAbsolutePath();
                 if (!mTempAudioFilePathName.exists() && mEditingWord != null) {
-                    dataSource = getAudioPathName(mCurrentListId, mEditingWord.getAudioFileName());
+                    dataSource = getAudioPathName(mCurrentListId, mEditingWord.getAudioFilename());
                 }
                 mPlayer.setDataSource(dataSource);
                 mPlayer.prepare();
@@ -187,35 +189,8 @@ public class AddEditWordActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.miSaveWord:
-                if (TextUtils.isEmpty(mongolEditText.getText().toString())) {
-                    // TODO add an alert
-                    return true;
-                }
-                if (mEditingWord != null) { // Edit word
-                    Vocab updateVocab = mEditingWord;
-                    updateVocab.setDate(System.currentTimeMillis());
-                    updateVocab.setMongol(mongolEditText.getText().toString());
-                    updateVocab.setDefinition(etDefinition.getText().toString());
-                    updateVocab.setPronunciation(etPronunciation.getText().toString());
-                    if (mTempAudioFilePathName.exists()) {
-                        if (!TextUtils.isEmpty(updateVocab.getAudioFileName())) {
-                            deleteAudioFile(updateVocab.getList(), updateVocab.getAudioFileName());
-                        }
-                        updateVocab.setAudioFileName(String.valueOf(updateVocab.getDate()) + FileUtils.AUDIO_FILE_EXTENSION);
-                    }
-                    new UpdateVocab().execute(updateVocab);
-                } else { // add word
-                    Vocab newVocab = new Vocab();
-                    newVocab.setDate(System.currentTimeMillis());
-                    newVocab.setList(mCurrentListId);
-                    newVocab.setMongol(mongolEditText.getText().toString());
-                    newVocab.setDefinition(etDefinition.getText().toString());
-                    newVocab.setPronunciation(etPronunciation.getText().toString());
-                    if (mTempAudioFilePathName.exists()) {
-                        newVocab.setAudioFileName(String.valueOf(newVocab.getDate()) + FileUtils.AUDIO_FILE_EXTENSION);
-                    }
-                    new AddVocab().execute(newVocab);
-                }
+                saveWord();
+
 
                 return true;
             case android.R.id.home:
@@ -228,6 +203,47 @@ public class AddEditWordActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void saveWord() {
+        if (notEnoughDataToSaveWord()) {
+            Toast.makeText(this, R.string.addedit_error_need_more_data, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Vocab vocab = (isNewVocab()) ? new Vocab(mStudyMode) : mEditingWord;
+        vocab.setMongol(mongolEditText.getText().toString());
+        vocab.setDefinition(etDefinition.getText().toString());
+        vocab.setPronunciation(etPronunciation.getText().toString());
+        if (mTempAudioFilePathName.exists()) {
+            deleteAudioFile(vocab);
+            vocab.setAudioFilename(createAudioFilename(vocab));
+        }
+
+        if (isNewVocab()) {
+            vocab.setListId(mCurrentListId);
+            vocab.setNextPracticeDate(System.currentTimeMillis());
+            vocab.setNthTry(Vocab.DEFAULT_NTH_TRY);
+            vocab.setInterval(Vocab.DEFAULT_INTERVAL_IN_DAYS);
+            vocab.setEasinessFactor(Vocab.DEFAULT_EASINESS_FACTOR);
+            new AddVocab().execute(vocab);
+        } else {
+            new UpdateVocab().execute(vocab);
+        }
+    }
+
+    private String createAudioFilename(Vocab vocab) {
+        return String.valueOf(vocab.getId()) + FileUtils.AUDIO_FILE_EXTENSION;
+    }
+
+    private boolean isNewVocab() {
+        return mEditingWord == null;
+    }
+
+    private boolean notEnoughDataToSaveWord() {
+        return (TextUtils.isEmpty(mongolEditText.getText())
+                && TextUtils.isEmpty(etDefinition.getText())
+                && TextUtils.isEmpty(etPronunciation.getText()));
     }
 
     @Override
@@ -294,6 +310,7 @@ public class AddEditWordActivity extends AppCompatActivity {
             mRecorder.release();
             mRecorder = null;
         }
+        if (getSupportActionBar() == null) return;
         getSupportActionBar().setBackgroundDrawable(getThemePrimaryColor());
     }
 
@@ -305,13 +322,16 @@ public class AddEditWordActivity extends AppCompatActivity {
     }
 
     private String getAudioPathName(long listId, String fileName) {
-        return getExternalFilesDir(null).getAbsolutePath() + "/" + listId + "/" + fileName;
+        File externalDir = getExternalFilesDir(null);
+        if (externalDir == null) return null;
+        return externalDir.getAbsolutePath() + File.separator + listId + File.separator + fileName;
     }
 
 
-
-    private boolean deleteAudioFile(long listId, String fileName) {
-        String filePathName = getAudioPathName(listId, fileName);
+    private boolean deleteAudioFile(Vocab vocab) {
+        if (TextUtils.isEmpty(vocab.getAudioFilename()))
+            return false;
+        String filePathName = getAudioPathName(vocab.getListId(), vocab.getAudioFilename());
         try {
             File file = new File(filePathName);
             return file.delete();
@@ -342,29 +362,22 @@ public class AddEditWordActivity extends AppCompatActivity {
             try {
 
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                if (item.getList() <= 0) {
-                    // make a new list
-                    String listName = "list"; // FIXME this is adding lists incorrectly sometimes
-                    long listId = dbAdapter.createNewList(listName);
-                    item.setList(listId);
-                }
+//                if (item.getListId() <= 0) {
+//                    // make a new list
+//                    String listName = "list"; // FIXME this is adding lists incorrectly sometimes
+//                    long listId = dbAdapter.createNewList(listName);
+//                    item.setListId(listId);
+//                }
                 vocabId = dbAdapter.addVocabItem(item);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
 
-            //File tempFile = new File(mTempAudioFilePathName);
-            if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFileName())) {
-                File destFile = new File(getExternalFilesDir(null).getAbsolutePath() + "/"
-                        + item.getList() + "/" + item.getAudioFileName());
+            if (vocabId >= 0)
+                copyTempFileToStorage(item);
+            else
+                Log.e(TAG, "Vocab item not added");
 
-                try {
-                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
-                } catch (IOException e) {
-                    Log.i("testing", "doInBackground: IOException");
-                    e.printStackTrace();
-                }
-            }
 
             return null;
         }
@@ -382,6 +395,21 @@ public class AddEditWordActivity extends AppCompatActivity {
 
     }
 
+    private void copyTempFileToStorage(Vocab item) {
+        if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFilename())) {
+            String filePath = getAudioPathName(item.getListId(), item.getAudioFilename());
+            if (filePath != null) {
+                File destFile = new File(filePath);
+                try {
+                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
+                } catch (IOException e) {
+                    Log.i("testing", "doInBackground: IOException");
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private class UpdateVocab extends AsyncTask<Vocab, Void, Void> {
 
         @Override
@@ -397,17 +425,19 @@ public class AddEditWordActivity extends AppCompatActivity {
                 Log.i("app", e.toString());
             }
 
+            if (vocabId >= 0)
+                copyTempFileToStorage(item);
             //File tempFile = new File(mTempAudioFilePathName);
-            if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFileName())) {
-                File destFile = new File(getExternalFilesDir(null).getAbsolutePath() + "/"
-                        + item.getList() + "/" + item.getAudioFileName());
-                try {
-                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
-                } catch (IOException e) {
-                    Log.i("testing", "doInBackground: IOException");
-                    e.printStackTrace();
-                }
-            }
+//            if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFilename())) {
+//                File destFile = new File(getExternalFilesDir(null).getAbsolutePath() + "/"
+//                        + item.getList() + "/" + item.getAudioFilename());
+//                try {
+//                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
+//                } catch (IOException e) {
+//                    Log.i("testing", "doInBackground: IOException");
+//                    e.printStackTrace();
+//                }
+//            }
             return null;
         }
 
@@ -438,7 +468,7 @@ public class AddEditWordActivity extends AppCompatActivity {
             try {
 
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                vocabItem = dbAdapter.getVocabItem(vocabId);
+                vocabItem = dbAdapter.getVocabItem(vocabId, mStudyMode);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }

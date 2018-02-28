@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int ADD_WORD_ACTIVITY_REQUEST_CODE = 1;
     private static final int SETTINGS_ACTIVITY_REQUEST_CODE = 2;
     private static final String LOG_TAG = "MainActivity";
+    private static final String TAG = "MainActivity";
 
     private TextView mNumberOfWordsView;
     private ScrollView mAnswerPanel;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mPlayButton;
     private MediaPlayer mPlayer = null;
     private boolean mLocked = false; // don't allow operations during db background tasks
+    private StudyMode mStudyMode = StudyMode.MONGOL;
 
 
     @Override
@@ -207,9 +209,8 @@ public class MainActivity extends AppCompatActivity {
     private View.OnClickListener mPlayButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (TextUtils.isEmpty(mCurrentVocabItem.getAudioFileName())) return;
-            String pathName = getExternalFilesDir(null).getAbsolutePath() + "/"
-                    + mCurrentVocabItem.getList() + "/" + mCurrentVocabItem.getAudioFileName();
+            String pathName = getPathForCurrentAudioFile();
+            if (pathName == null) return; // TODO should hide the button
             if (mPlayer != null) {
                 mPlayer.release();
                 mPlayer = null;
@@ -224,6 +225,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private String getPathForCurrentAudioFile() {
+        String filename = mCurrentVocabItem.getAudioFilename();
+        if (TextUtils.isEmpty(filename)) return null;
+
+        File externalDir = getExternalFilesDir(null);
+        if (externalDir == null) return null;
+
+        String dirPath = externalDir.getAbsolutePath();
+        String pathName =
+                dirPath + File.separator +
+                mCurrentVocabItem.getListId() + File.separator +
+                filename;
+        return pathName;
+    }
 
     private void deleteWord() {
         // setup the alert builder
@@ -261,20 +277,20 @@ public class MainActivity extends AppCompatActivity {
             case R.id.response_button_2:
                 Calendar tomorrow = Calendar.getInstance();
                 tomorrow.add(Calendar.DATE, 1);
-                mCurrentVocabItem.setDate(tomorrow.getTimeInMillis());
-                new UpdateVocab().execute(mCurrentVocabItem);
+                mCurrentVocabItem.setNextPracticeDate(tomorrow.getTimeInMillis());
+                new UpdateVocabPracticeData().execute(mCurrentVocabItem);
                 break;
             case R.id.response_button_3:
                 Calendar nextWeek = Calendar.getInstance();
                 nextWeek.add(Calendar.DATE, 7);
-                mCurrentVocabItem.setDate(nextWeek.getTimeInMillis());
-                new UpdateVocab().execute(mCurrentVocabItem);
+                mCurrentVocabItem.setNextPracticeDate(nextWeek.getTimeInMillis());
+                new UpdateVocabPracticeData().execute(mCurrentVocabItem);
                 break;
             case R.id.response_button_4:
                 Calendar nextMonth = Calendar.getInstance();
                 nextMonth.add(Calendar.DATE, 30);
-                mCurrentVocabItem.setDate(nextMonth.getTimeInMillis());
-                new UpdateVocab().execute(mCurrentVocabItem);
+                mCurrentVocabItem.setNextPracticeDate(nextMonth.getTimeInMillis());
+                new UpdateVocabPracticeData().execute(mCurrentVocabItem);
                 break;
         }
 
@@ -302,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
         mMongolView.setText(item.getMongol());
         mDefinitionView.setText(item.getDefinition());
         mPronunciationView.setText(item.getPronunciation());
-        if (TextUtils.isEmpty(item.getAudioFileName())) {
+        if (TextUtils.isEmpty(item.getAudioFilename())) {
             mPlayButton.setVisibility(View.INVISIBLE);
         } else {
             mPlayButton.setVisibility(View.VISIBLE);
@@ -340,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
             try {
 
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                results = dbAdapter.getTodaysVocab(list);
+                results = dbAdapter.getTodaysVocab(list, mStudyMode);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -390,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class UpdateVocab extends AsyncTask<Vocab, Void, Void> {
+    private class UpdateVocabPracticeData extends AsyncTask<Vocab, Void, Void> {
 
         @Override
         protected void onPreExecute() {
@@ -403,11 +419,18 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Vocab... params) {
 
             Vocab item = params[0];
+            final long id = item.getId();
+            final long nextPracticeDate = item.getNextPracticeDate();
+            final int nthTry = item.getNthTry();
+            final int interval = item.getInterval();
+            final float eFactor = item.getEasinessFactor();
 
             try {
 
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                dbAdapter.updateVocabItem(item);
+                dbAdapter.updateVocabItemPracticeData(
+                        mStudyMode, id, nextPracticeDate, nthTry, interval, eFactor);
+                // TODO if audio file was updated then change
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -435,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
             try {
 
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                vocabItem = dbAdapter.getVocabItem(vocabId);
+                vocabItem = dbAdapter.getVocabItem(vocabId, mStudyMode);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -461,18 +484,24 @@ public class MainActivity extends AppCompatActivity {
             try {
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
                 dbAdapter.deleteVocabItem(item.getId());
-                if (!TextUtils.isEmpty(item.getAudioFileName())) {
-                    File audioFile = new File(
-                            getExternalFilesDir(null),
-                            String.valueOf(item.getList()) + File.separator
-                                    + item.getAudioFileName());
-                    if (audioFile.exists()) audioFile.delete();
-                }
+                deleteAudioFile(item);
+
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
 
             return null;
+        }
+
+        private void deleteAudioFile(Vocab item) {
+            if (TextUtils.isEmpty(item.getAudioFilename()))
+                return;
+            File audioFile = new File(
+                    getExternalFilesDir(null),
+                    String.valueOf(item.getListId()) + File.separator
+                            + item.getAudioFilename());
+            if (audioFile.exists() && audioFile.delete())
+                Log.i(TAG, "File deleted: " + item.getAudioFilename());
         }
 
         @Override

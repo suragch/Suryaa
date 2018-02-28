@@ -12,7 +12,7 @@ public class VocabEntry {
     static final String MONGOL = "mongol";
     static final String DEFINITION = "definition";
     static final String PRONUNCIATION = "pronunciation";
-    static final String AUDIO = "audio";
+    static final String AUDIO_FILENAME = "audio_filename";
     static final String MONGOL_NEXT_PRACTICE_DATE = "mongol_next_practice_date";
     static final String MONGOL_NTH_TRY = "mongol_nth_try";
     static final String MONGOL_INTERVAL = "mongol_interval";
@@ -46,7 +46,7 @@ public class VocabEntry {
             + MONGOL + " TEXT,"
             + DEFINITION + " TEXT,"
             + PRONUNCIATION + " TEXT,"
-            + AUDIO + " BLOB,"
+            + AUDIO_FILENAME + " TEXT,"
             + MONGOL_NEXT_PRACTICE_DATE + " INTEGER DEFAULT " + DEFAULT_NEXT_PRACTICE_DATE + ","
             + MONGOL_NTH_TRY + " INTEGER DEFAULT " + DEFAULT_NTH_TRY + ","
             + MONGOL_INTERVAL + " INTEGER DEFAULT " + DEFAULT_INTERVAL + ","

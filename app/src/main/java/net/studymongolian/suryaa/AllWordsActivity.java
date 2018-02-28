@@ -45,12 +45,13 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
     @Override
     public void onItemClick(View view, int position) {
 
-        Date date = new Date(mWordList.get(position).getDate());
-        java.text.DateFormat df = SimpleDateFormat.getDateTimeInstance(
-                SimpleDateFormat.SHORT, SimpleDateFormat.SHORT, Locale.getDefault());
-        String formattedDate = df.format(date);
-
-        Toast.makeText(this, "Due date: " + formattedDate, Toast.LENGTH_SHORT).show();
+        // TODO play audio
+//        Date date = new Date(mWordList.get(position).getDate());
+//        java.text.DateFormat df = SimpleDateFormat.getDateTimeInstance(
+//                SimpleDateFormat.SHORT, SimpleDateFormat.SHORT, Locale.getDefault());
+//        String formattedDate = df.format(date);
+//
+//        Toast.makeText(this, "Due date: " + formattedDate, Toast.LENGTH_SHORT).show();
     }
 
     @Override

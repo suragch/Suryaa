@@ -13,23 +13,27 @@ public class Vocab {
     private String mongol;
     private String definition;
     private String pronunciation;
+    private String audioFilename;
     private long nextPracticeDate;
     private int nthTry;
     private int interval;
     private float easinessFactor;
     private StudyMode studyMode;
 
-    public Vocab() {
-        this.id=0;
-        this.listId=0;
-        this.mongol="";
-        this.definition="";
-        this.pronunciation="";
-        this.nextPracticeDate = DEFAULT_NEXT_PRACTICE_DATE;
-        this.nthTry = DEFAULT_NTH_TRY;
-        this.interval = DEFAULT_INTERVAL_IN_DAYS;
-        this.easinessFactor = DEFAULT_EASINESS_FACTOR;
-        this.studyMode = DEFAULT_STUDY_MODE;
+    private Vocab() {}
+
+    public Vocab(StudyMode studyMode) {
+        this.id = -1;
+        this.listId = -1;
+        this.mongol = null;
+        this.definition = null;
+        this.pronunciation = null;
+        this.audioFilename = null;
+        this.nextPracticeDate = -1;
+        this.nthTry = -1;
+        this.interval = -1;
+        this.easinessFactor = -1;
+        this.studyMode = studyMode;
     }
 
     public long getId() {
@@ -72,6 +76,14 @@ public class Vocab {
         this.pronunciation = pronunciation;
     }
 
+    public String getAudioFilename() {
+        return audioFilename;
+    }
+
+    public void setAudioFilename(String audioFilename) {
+        this.audioFilename = audioFilename;
+    }
+
     public long getNextPracticeDate() {
         return nextPracticeDate;
     }
@@ -108,7 +120,7 @@ public class Vocab {
         return studyMode;
     }
 
-    public void setStudyMode(StudyMode studyMode) {
-        this.studyMode = studyMode;
-    }
+//    public void setStudyMode(StudyMode studyMode) {
+//        this.studyMode = studyMode;
+//    }
 }

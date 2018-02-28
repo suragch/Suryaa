@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Suryaa</string>
+
     <string name="play_audio_content_description">play audio</string>
     <string name="lists_activity_title">Word Lists</string>
     <string name="add_word_activity_title">Add word</string>
@@ -10,5 +10,6 @@
 
     <!-- database -->
     <string name="default_list_name">default list</string>
+    <string name="addedit_error_need_more_data">You need to fill in more info before you can save this word.</string>
 
 </resources>

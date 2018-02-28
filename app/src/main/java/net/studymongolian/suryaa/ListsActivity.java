@@ -178,7 +178,7 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
         Intent intent;
         chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
         chooseFile.setType("files/*");
-        intent = Intent.createChooser(chooseFile, "Choose a CSV (comma-separated value) text file");
+        intent = Intent.createChooser(chooseFile, "Choose a CSV text file");
         startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
 
     }
@@ -240,20 +240,24 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
         if (resultCode != RESULT_OK) return;
         if (requestCode == ACTIVITY_CHOOSE_FILE) {
             Uri uri = data.getData();
-            String filePath = getRealPathFromURI(uri);
+            String filePath = getPathFromURI(uri);
             new ImportList(this).execute(filePath);
         }
     }
 
-    public String getRealPathFromURI(Uri contentUri) {
-        String[] proj = {MediaStore.Images.Media.DATA};
-        Cursor cursor = getContentResolver().query(contentUri, proj, null, null, null);
+    public String getPathFromURI(Uri uri) {
+        String path = uri.getPath();
+        if (path != null)
+            return path;
+
+        String[] projection = {MediaStore.Files.FileColumns.DATA};
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
         if (cursor == null) return null;
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         cursor.moveToFirst();
-        String returnString = cursor.getString(column_index);
+        int column_index = cursor.getColumnIndexOrThrow(projection[0]);
+        path = cursor.getString(column_index);
         cursor.close();
-        return returnString;
+        return path;
     }
 
     private static class GetAllLists extends AsyncTask<Void, Void, List<VocabList>> {
@@ -357,6 +361,8 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
         protected void onPostExecute(Long insertedRowNumber) {
             ListsActivity activity = activityReference.get();
             if (activity == null) return;
+            if (insertedRowNumber < 0)
+                Toast.makeText(activity, "Couldn't rename list", Toast.LENGTH_SHORT).show();
             new GetAllLists(activity).execute();
         }
 
@@ -519,7 +525,6 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
             if (activityContext == null) return false;
 
             String csvFilePathName = params[0];
-            String parentDir = new File(csvFilePathName).getParent();
             String listname = new File(csvFilePathName).getName();
             if (listname.endsWith(FileUtils.EXPORT_IMPORT_FILE_EXTENSION)) {
                 listname = listname.replace(FileUtils.EXPORT_IMPORT_FILE_EXTENSION, "");
@@ -538,18 +543,8 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 newListId = dbAdapter.createNewList(listname);
                 allVocabInList = FileUtils.importFile(csvFilePathName, newListId);
                 // copy audio files
-                for (Vocab item : allVocabInList) {
-                    if (TextUtils.isEmpty(item.getAudioFileName())) {
-                        continue;
-                    }
-                    File source = new File(parentDir, item.getAudioFileName());
-                    if (source.exists()) {
-                        String pathName  = activityContext.getExternalFilesDir(null).getAbsolutePath()
-                                + "/" + newListId;
-                        File dest = new File(pathName, item.getAudioFileName());
-                        FileUtils.copyFile(source, dest);
-                    }
-                }
+
+                copyAudioFilesRemovingNullReferences(activityContext, csvFilePathName, allVocabInList);
                 dbAdapter.bulkInsert(allVocabInList);
                 result = true;
 
@@ -566,6 +561,29 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
 
             return result;
 
+        }
+
+        private void copyAudioFilesRemovingNullReferences
+                (Context context, String csvFilePathName, List<Vocab> allVocabInList)
+                throws Exception {
+
+            for (Vocab item : allVocabInList) {
+                String fileName = item.getAudioFilename();
+                if (TextUtils.isEmpty(fileName)) {
+                    continue;
+                }
+                String parentDir = new File(csvFilePathName).getParent();
+                File source = new File(parentDir, item.getAudioFilename());
+                File externalDir = context.getExternalFilesDir(null);
+                if (source.exists() && externalDir != null) {
+                    String pathName  = externalDir.getAbsolutePath() + File.separator +
+                            item.getListId();
+                    File dest = new File(pathName, item.getAudioFilename());
+                    FileUtils.copyFile(source, dest);
+                } else {
+                    item.setAudioFilename("");
+                }
+            }
         }
 
         @Override

@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
 class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "suryaa.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String TAG = DatabaseHelper.class.getName();
 
 
@@ -50,7 +50,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
 
         switch (oldVersion) {
             case 1:
-                readAndExecuteSQLScript(db, context, "from_1_to_2.sql");
+                String relativePathInAssetsFolder = "databases/suryaa/from_1_to_2.sql";
+                readAndExecuteSQLScript(db, context, relativePathInAssetsFolder);
 
                 // don't include break statement between version numbers
                 // so that the updates are run cumulatively (https://stackoverflow.com/a/8133640)
@@ -58,54 +59,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
                 break;
 
         }
-
-
     }
-
-//    private void upgradeFromOneToTwo(SQLiteDatabase db) {
-//        // update table schema
-//        readAndExecuteSQLScript(db, context, "from_1_to_2.sql");
-//
-//
-//
-//    }
-
-//    private class UpgradeFromOneToTwo extends AsyncTask<SQLiteDatabase, Void, Void> {
-//
-//        private static final String SQL_UPGRADE_SCRIPT = "from_1_to_2.sql";
-//
-//        @Override
-//        protected Void doInBackground(SQLiteDatabase... params) {
-//
-//            SQLiteDatabase db = params[0];
-//
-//            try {
-//
-//                // update table schema
-//                readAndExecuteSQLScript(db, context, SQL_UPGRADE_SCRIPT);
-//
-//                // put audio files as BLOB data in db
-//                String[] columns = {"_id", "audio_filename"};
-//                String selection = "audio_filename IS NOT NULL AND audio_filename != \"\"";
-//                Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection,
-//                        null,null, null, null, null);
-//                int indexId = cursor.getColumnIndex("_id");
-//                int indexAudio = cursor.getColumnIndex("audio_filename");
-//
-//                while (cursor.moveToNext()) {
-//                    int id = cursor.getInt(indexId);
-//                    String filename = cursor.getString(indexAudio);
-//                }
-//
-//                cursor.close();
-//
-//            } catch (Exception exception) {
-//                Log.e(TAG, "Exception running upgrade script: ", exception);
-//            }
-//
-//            return null;
-//        }
-//    }
 
     private void readAndExecuteSQLScript(SQLiteDatabase db, Context ctx, String fileName) {
         if (TextUtils.isEmpty(fileName)) {

@@ -70,7 +70,7 @@ class FileUtils {
     }
 
     private static void copyAudioFileOver(Context context, Vocab item, File sourceAudioFolder, File destFolder) throws IOException {
-        String audio = item.getAudioFileName();
+        String audio = item.getAudioFilename();
         if (TextUtils.isEmpty(audio)) return;
         File source = new File(sourceAudioFolder, audio);
         File dest = new File(destFolder, audio);
@@ -82,7 +82,7 @@ class FileUtils {
         String mongol = item.getMongol().replace("\"", "\"\"");
         String definition = item.getDefinition().replace("\"", "\"\"");
         String pronunciation = item.getPronunciation().replace("\"", "\"\"");
-        String audio = item.getAudioFileName();
+        String audio = item.getAudioFilename();
         String content = "\"" + mongol + "\"," +
                 "\"" + definition + "\"," +
                 "\"" + pronunciation + "\"," +
@@ -119,12 +119,12 @@ class FileUtils {
         while (scanner.hasNext()) {
             List<String> line = parseLine(scanner.nextLine());
             // TODO do error checking on line
-            Vocab item = new Vocab();
-            item.setList(listId);
+            Vocab item = new Vocab(null);
+            item.setListId(listId);
             item.setMongol(line.get(0));
             item.setDefinition(line.get(1));
             item.setPronunciation(line.get(2));
-            item.setAudioFileName(line.get(3));
+            item.setAudioFilename(line.get(3));
             vocabs.add(item);
         }
         scanner.close();

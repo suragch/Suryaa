@@ -23,7 +23,7 @@ CREATE TABLE vocab
   mongol TEXT,
   definition TEXT,
   pronunciation TEXT,
-  audio BLOB,
+  audio_filename TEXT,
   mongol_next_practice_date INTEGER DEFAULT 0,
   mongol_nth_try INTEGER DEFAULT 1,
   mongol_interval INTEGER DEFAULT 1,
@@ -39,10 +39,8 @@ CREATE TABLE vocab
   FOREIGN KEY(list_id) REFERENCES lists(_id)
 );
 
--- WARNING: this drops the audio filename from version 1 so all audio will be lost!
-
-INSERT INTO vocab (list_id, mongol, definition, pronunciation, mongol_next_practice_date)
-  SELECT list_id, mongol, definition, pronunciation, date
+INSERT INTO vocab (list_id, mongol, definition, pronunciation, audio_filename, mongol_next_practice_date)
+  SELECT list_id, mongol, definition, pronunciation, audio, date
   FROM _vocab_old;
 
 DROP TABLE IF EXISTS _vocab_old;
