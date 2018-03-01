@@ -26,10 +26,10 @@ public class VocabEntry {
     static final String PRONUNCIATION_INTERVAL = "pronunciation_interval";
     static final String PRONUNCIATION_EF = "pronunciation_easiness_factor";
 
-    private static final int DEFAULT_NEXT_PRACTICE_DATE = 0;
-    private static final int DEFAULT_NTH_TRY = 1;
-    private static final int DEFAULT_INTERVAL = 1;
-    private static final float DEFAULT_EASINESS_FACTOR = 2.5f;
+//    private static final int DEFAULT_NEXT_PRACTICE_DATE = 0;
+//    private static final int DEFAULT_NTH_TRY = 1;
+//    private static final int DEFAULT_INTERVAL = 1;
+//    private static final float DEFAULT_EASINESS_FACTOR = 2.5f;
 
 //    static final String VOCAB_ID = "_id";
 //    static final String NEXT_PRACTICE_DATE = "date";
@@ -47,18 +47,19 @@ public class VocabEntry {
             + DEFINITION + " TEXT,"
             + PRONUNCIATION + " TEXT,"
             + AUDIO_FILENAME + " TEXT,"
-            + MONGOL_NEXT_PRACTICE_DATE + " INTEGER DEFAULT " + DEFAULT_NEXT_PRACTICE_DATE + ","
-            + MONGOL_NTH_TRY + " INTEGER DEFAULT " + DEFAULT_NTH_TRY + ","
-            + MONGOL_INTERVAL + " INTEGER DEFAULT " + DEFAULT_INTERVAL + ","
-            + MONGOL_EF + " REAL DEFAULT " + DEFAULT_EASINESS_FACTOR + ","
-            + DEFINITION_NEXT_PRACTICE_DATE + " INTEGER DEFAULT " + DEFAULT_NEXT_PRACTICE_DATE + ","
-            + DEFINITION_NTH_TRY + " INTEGER DEFAULT " + DEFAULT_NTH_TRY + ","
-            + DEFINITION_INTERVAL + " INTEGER DEFAULT " + DEFAULT_INTERVAL + ","
-            + DEFINITION_EF + " REAL DEFAULT " + DEFAULT_EASINESS_FACTOR + ","
-            + PRONUNCIATION_NEXT_PRACTICE_DATE + " INTEGER DEFAULT " + DEFAULT_NEXT_PRACTICE_DATE + ","
-            + PRONUNCIATION_NTH_TRY + " INTEGER DEFAULT " + DEFAULT_NTH_TRY + ","
-            + PRONUNCIATION_INTERVAL + " INTEGER DEFAULT " + DEFAULT_INTERVAL + ","
-            + PRONUNCIATION_EF + " REAL DEFAULT " + DEFAULT_EASINESS_FACTOR + ","
-            + "FOREIGN KEY(" + LIST_ID + ") REFERENCES " + ListsEntry.LIST_TABLE + "(" + ListsEntry.LIST_ID + "))";
+            + MONGOL_NEXT_PRACTICE_DATE + " INTEGER DEFAULT 0,"
+            + MONGOL_NTH_TRY + " INTEGER DEFAULT 1,"
+            + MONGOL_INTERVAL + " INTEGER DEFAULT 1,"
+            + MONGOL_EF + " REAL DEFAULT 2.5,"
+            + DEFINITION_NEXT_PRACTICE_DATE + " INTEGER DEFAULT 0,"
+            + DEFINITION_NTH_TRY + " INTEGER DEFAULT 1,"
+            + DEFINITION_INTERVAL + " INTEGER DEFAULT 1,"
+            + DEFINITION_EF + " REAL DEFAULT 2.5,"
+            + PRONUNCIATION_NEXT_PRACTICE_DATE + " INTEGER DEFAULT 0,"
+            + PRONUNCIATION_NTH_TRY + " INTEGER DEFAULT 1,"
+            + PRONUNCIATION_INTERVAL + " INTEGER DEFAULT 1,"
+            + PRONUNCIATION_EF + " REAL DEFAULT 2.5,"
+            + "FOREIGN KEY(" + LIST_ID + ") "
+            + "REFERENCES " + ListsEntry.LIST_TABLE + "(" + ListsEntry.LIST_ID + "))";
 
 }

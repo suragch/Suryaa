@@ -51,6 +51,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
         switch (oldVersion) {
             case 1:
                 String relativePathInAssetsFolder = "databases/suryaa/from_1_to_2.sql";
+                Log.i(TAG, "relativePathInAssetsFolder: " + relativePathInAssetsFolder);
                 readAndExecuteSQLScript(db, context, relativePathInAssetsFolder);
 
                 // don't include break statement between version numbers
@@ -62,11 +63,6 @@ class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void readAndExecuteSQLScript(SQLiteDatabase db, Context ctx, String fileName) {
-        if (TextUtils.isEmpty(fileName)) {
-            Log.d(TAG, "SQL script file name is empty");
-            return;
-        }
-
         AssetManager assetManager = ctx.getAssets();
         BufferedReader reader = null;
 
@@ -96,7 +92,9 @@ class DatabaseHelper extends SQLiteOpenHelper {
             statement.append(line);
             statement.append("\n");
             if (line.endsWith(";")) {
+                Log.i(TAG, "executeSQLScript: " + statement.toString());
                 db.execSQL(statement.toString());
+                Log.i(TAG, "executeSQLScript: executed");
                 statement = new StringBuilder();
             }
         }
@@ -124,6 +122,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
             contentValues.put(VocabEntry.LIST_ID, listId);
             contentValues.put(VocabEntry.MONGOL, mongolEntries[i]);
             contentValues.put(VocabEntry.DEFINITION, definitions[i]);
+            contentValues.put(VocabEntry.AUDIO_FILENAME, "");
             contentValues.put(VocabEntry.PRONUNCIATION, pronunciations[i]);
             contentValues.put(VocabEntry.MONGOL_NEXT_PRACTICE_DATE, date);
             contentValues.put(VocabEntry.DEFINITION_NEXT_PRACTICE_DATE, date);

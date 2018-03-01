@@ -9,7 +9,7 @@
 --   pronunciation TEXT,
 --   audio TEXT,
 --   FOREIGN KEY(list_id) REFERENCES lists(_id)
--- );
+-- ); -- end comment (comment lines cannot end with semicolon)
 
 PRAGMA foreign_keys=off;
 

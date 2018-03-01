@@ -25,14 +25,14 @@ public class Vocab {
     public Vocab(StudyMode studyMode) {
         this.id = -1;
         this.listId = -1;
-        this.mongol = null;
-        this.definition = null;
-        this.pronunciation = null;
-        this.audioFilename = null;
-        this.nextPracticeDate = -1;
-        this.nthTry = -1;
-        this.interval = -1;
-        this.easinessFactor = -1;
+        this.mongol = "";
+        this.definition = "";
+        this.pronunciation = "";
+        this.audioFilename = "";
+        this.nextPracticeDate = DEFAULT_NEXT_PRACTICE_DATE;
+        this.nthTry = DEFAULT_NTH_TRY;
+        this.interval = DEFAULT_INTERVAL_IN_DAYS;
+        this.easinessFactor = DEFAULT_EASINESS_FACTOR;
         this.studyMode = studyMode;
     }
 
