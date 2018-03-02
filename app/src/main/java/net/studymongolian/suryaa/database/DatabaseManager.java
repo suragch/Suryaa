@@ -241,12 +241,10 @@ public class DatabaseManager {
 
         contentValues.put(VocabEntry.DEFINITION_NEXT_DUE_DATE, entry.getNextDueDate());
         contentValues.put(VocabEntry.DEFINITION_CONSECUTIVE_CORRECT, entry.getConsecutiveCorrect());
-        //contentValues.put(VocabEntry.DEFINITION_INTERVAL, entry.getInterval());
         contentValues.put(VocabEntry.DEFINITION_EF, entry.getEasinessFactor());
 
         contentValues.put(VocabEntry.PRONUNCIATION_NEXT_DUE_DATE, entry.getNextDueDate());
         contentValues.put(VocabEntry.PRONUNCIATION_CONSECUTIVE_CORRECT, entry.getConsecutiveCorrect());
-        //contentValues.put(VocabEntry.PRONUNCIATION_INTERVAL, entry.getInterval());
         contentValues.put(VocabEntry.PRONUNCIATION_EF, entry.getEasinessFactor());
 
         SQLiteDatabase db = mHelper.getWritableDatabase();

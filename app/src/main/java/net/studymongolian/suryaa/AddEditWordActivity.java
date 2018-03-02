@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
@@ -33,6 +34,7 @@ import net.studymongolian.mongollibrary.MongolEditText;
 import net.studymongolian.mongollibrary.MongolFont;
 import net.studymongolian.mongollibrary.MongolInputMethodManager;
 import net.studymongolian.suryaa.database.DatabaseManager;
+import net.studymongolian.suryaa.database.ListsEntry;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,8 +174,6 @@ public class AddEditWordActivity extends AppCompatActivity {
         }
         if (!permissionToRecordAccepted) {
             finish();
-            //if (mRecordButton != null) mRecordButton.setVisibility(View.INVISIBLE);
-            //if (mPlayButton != null) mPlayButton.setVisibility(View.INVISIBLE);
         }
         // TODO don't finish, just disable audio recording button
     }
@@ -212,19 +212,19 @@ public class AddEditWordActivity extends AppCompatActivity {
         }
 
         Vocab vocab = (isNewVocab()) ? new Vocab(mStudyMode) : mEditingWord;
+        vocab.setListId(mCurrentListId);
         vocab.setMongol(mongolEditText.getText().toString());
         vocab.setDefinition(etDefinition.getText().toString());
         vocab.setPronunciation(etPronunciation.getText().toString());
         if (mTempAudioFilePathName.exists()) {
             deleteAudioFile(vocab);
-            vocab.setAudioFilename(createAudioFilename(vocab));
+            vocab.setAudioFilename(createAudioFileName(vocab));
         }
 
         if (isNewVocab()) {
             vocab.setListId(mCurrentListId);
             vocab.setNextDueDate(System.currentTimeMillis());
             vocab.setConsecutiveCorrect(Vocab.DEFAULT_CONSECUTIVE_CORRECT);
-            //vocab.setInterval(Vocab.DEFAULT_INTERVAL_IN_DAYS);
             vocab.setEasinessFactor(Vocab.DEFAULT_EASINESS_FACTOR);
             new AddVocab().execute(vocab);
         } else {
@@ -232,8 +232,44 @@ public class AddEditWordActivity extends AppCompatActivity {
         }
     }
 
-    private String createAudioFilename(Vocab vocab) {
-        return String.valueOf(vocab.getId()) + FileUtils.AUDIO_FILE_EXTENSION;
+    private String createAudioFileName(Vocab vocab) {
+        String name = choosePotentialFileNameString(vocab);
+        name = abbreviate(name);
+        name = ensureUniqueAudioFile(vocab.getListId(), name);
+        return name + FileUtils.AUDIO_FILE_EXTENSION;
+    }
+
+    private String choosePotentialFileNameString(Vocab vocab) {
+        if (!TextUtils.isEmpty(vocab.getMongol())) {
+            return MongolUtils.romanize(vocab.getMongol());
+        } else if (!TextUtils.isEmpty(vocab.getDefinition())) {
+            return vocab.getDefinition();
+        } else {
+            return vocab.getPronunciation();
+        }
+    }
+
+    private String abbreviate(String name) {
+        final int abbreviationLength = 16;
+        int start = 0;
+        int end = Math.min(name.length(), abbreviationLength);
+        return name.substring(start, end);
+    }
+
+    private String ensureUniqueAudioFile(long listId, String name) {
+        int count = 1;
+        String newName = name;
+        boolean nameExists = true;
+        while (nameExists) {
+            String filename = newName + FileUtils.AUDIO_FILE_EXTENSION;
+            String path = getAudioPathName(listId, filename);
+            if (path == null) return name;
+            File file = new File(path);
+            if (!file.exists()) break;
+            newName = name + "(" + count + ")";
+            count++;
+        }
+        return newName;
     }
 
     private boolean isNewVocab() {
@@ -287,6 +323,7 @@ public class AddEditWordActivity extends AppCompatActivity {
             mRecordingIndicatorHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    if (getSupportActionBar() == null) return;
                     getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
                 }
             }, RECORDING_INDICATOR_DELAY);
@@ -332,11 +369,12 @@ public class AddEditWordActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(vocab.getAudioFilename()))
             return false;
         String filePathName = getAudioPathName(vocab.getListId(), vocab.getAudioFilename());
+        if (filePathName == null) return false;
         try {
             File file = new File(filePathName);
             return file.delete();
         } catch (SecurityException e) {
-            Log.e("tag", e.getMessage());
+            Log.e("deleteAudioFile: ", e.getMessage());
         }
         return false;
     }
@@ -344,7 +382,7 @@ public class AddEditWordActivity extends AppCompatActivity {
     private void deleteTempFile() {
 
         try {
-            boolean fileDeleted = mTempAudioFilePathName.delete();
+            mTempAudioFilePathName.delete();
         } catch (SecurityException e) {
             Log.e("tag", e.getMessage());
         }
@@ -360,22 +398,16 @@ public class AddEditWordActivity extends AppCompatActivity {
 
             long vocabId = -1;
             try {
-
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-//                if (item.getListId() <= 0) {
-//                    // make a new list
-//                    String listName = "list"; // FIXME this is adding lists incorrectly sometimes
-//                    long listId = dbAdapter.createNewList(listName);
-//                    item.setListId(listId);
-//                }
                 vocabId = dbAdapter.addVocabItem(item);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
 
-            if (vocabId >= 0)
+            if (vocabId >= 0) {
+                item.setId(vocabId);
                 copyTempFileToStorage(item);
-            else
+            } else
                 Log.e(TAG, "Vocab item not added");
 
 
@@ -396,17 +428,18 @@ public class AddEditWordActivity extends AppCompatActivity {
     }
 
     private void copyTempFileToStorage(Vocab item) {
-        if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFilename())) {
-            String filePath = getAudioPathName(item.getListId(), item.getAudioFilename());
-            if (filePath != null) {
-                File destFile = new File(filePath);
-                try {
-                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
-                } catch (IOException e) {
-                    Log.i("testing", "doInBackground: IOException");
-                    e.printStackTrace();
-                }
-            }
+        if (!mTempAudioFilePathName.exists()) return;
+        if (TextUtils.isEmpty(item.getAudioFilename())) return;
+
+        String filePath = getAudioPathName(item.getListId(), item.getAudioFilename());
+        if (filePath == null) return;
+
+        File destFile = new File(filePath);
+        try {
+            FileUtils.copyFile(mTempAudioFilePathName, destFile);
+        } catch (IOException e) {
+            Log.i("testing", "doInBackground: IOException");
+            e.printStackTrace();
         }
     }
 
@@ -425,19 +458,10 @@ public class AddEditWordActivity extends AppCompatActivity {
                 Log.i("app", e.toString());
             }
 
-            if (vocabId >= 0)
+            if (vocabId >= 0) {
+                item.setId(vocabId);
                 copyTempFileToStorage(item);
-            //File tempFile = new File(mTempAudioFilePathName);
-//            if (mTempAudioFilePathName.exists() && !TextUtils.isEmpty(item.getAudioFilename())) {
-//                File destFile = new File(getExternalFilesDir(null).getAbsolutePath() + "/"
-//                        + item.getList() + "/" + item.getAudioFilename());
-//                try {
-//                    FileUtils.copyFile(mTempAudioFilePathName, destFile);
-//                } catch (IOException e) {
-//                    Log.i("testing", "doInBackground: IOException");
-//                    e.printStackTrace();
-//                }
-//            }
+            }
             return null;
         }
 
