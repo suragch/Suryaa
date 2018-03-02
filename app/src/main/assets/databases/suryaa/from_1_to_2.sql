@@ -24,22 +24,19 @@ CREATE TABLE vocab
   definition TEXT,
   pronunciation TEXT,
   audio_filename TEXT,
-  mongol_next_practice_date INTEGER DEFAULT 0,
-  mongol_nth_try INTEGER DEFAULT 1,
-  mongol_interval INTEGER DEFAULT 1,
+  mongol_next_due_date INTEGER DEFAULT 0,
+  mongol_consecutive_correct INTEGER DEFAULT 0,
   mongol_easiness_factor REAL DEFAULT 2.5,
-  definition_next_practice_date INTEGER DEFAULT 0,
-  definition_nth_try INTEGER DEFAULT 1,
-  definition_interval INTEGER DEFAULT 1,
+  definition_next_due_date INTEGER DEFAULT 0,
+  definition_consecutive_correct INTEGER DEFAULT 0,
   definition_easiness_factor REAL DEFAULT 2.5,
-  pronunciation_next_practice_date INTEGER DEFAULT 0,
-  pronunciation_nth_try INTEGER DEFAULT 1,
-  pronunciation_interval INTEGER DEFAULT 1,
+  pronunciation_next_due_date INTEGER DEFAULT 0,
+  pronunciation_consecutive_correct INTEGER DEFAULT 0,
   pronunciation_easiness_factor REAL DEFAULT 2.5,
   FOREIGN KEY(list_id) REFERENCES lists(_id)
 );
 
-INSERT INTO vocab (list_id, mongol, definition, pronunciation, audio_filename, mongol_next_practice_date)
+INSERT INTO vocab (list_id, mongol, definition, pronunciation, audio_filename, mongol_next_due_date)
   SELECT list_id, mongol, definition, pronunciation, audio, date
   FROM _vocab_old;
 

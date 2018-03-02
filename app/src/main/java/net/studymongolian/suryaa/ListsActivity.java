@@ -78,6 +78,7 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 importFile();
                 return true;
             case android.R.id.home:
+
                 finish();
                 return true;
             default:

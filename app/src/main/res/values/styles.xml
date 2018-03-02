@@ -24,4 +24,17 @@
         <item name="android:background">@drawable/ic_play_circle_filled_black_48dp</item>
     </style>
 
+    <style name="responseButtonStyle" parent="AppTheme">
+        <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginLeft">5dp</item>
+        <item name="android:layout_marginRight">5dp</item>
+        <item name="android:background">@drawable/btn_default</item>
+    </style>
+
 </resources>

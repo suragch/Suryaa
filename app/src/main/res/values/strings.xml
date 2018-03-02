@@ -11,5 +11,12 @@
     <!-- database -->
     <string name="default_list_name">default list</string>
     <string name="addedit_error_need_more_data">You need to fill in more info before you can save this word.</string>
+    <string name="main_response_button_4">4</string>
+    <string name="main_response_button_0">0</string>
+    <string name="main_response_button_1">1</string>
+    <string name="main_response_button_2">2</string>
+    <string name="main_response_button_3">3</string>
+    <string name="main_response_button_5">5</string>
+    <string name="help_activity_title">Help</string>
 
 </resources>

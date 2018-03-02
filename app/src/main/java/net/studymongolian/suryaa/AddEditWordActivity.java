@@ -222,9 +222,9 @@ public class AddEditWordActivity extends AppCompatActivity {
 
         if (isNewVocab()) {
             vocab.setListId(mCurrentListId);
-            vocab.setNextPracticeDate(System.currentTimeMillis());
-            vocab.setNthTry(Vocab.DEFAULT_NTH_TRY);
-            vocab.setInterval(Vocab.DEFAULT_INTERVAL_IN_DAYS);
+            vocab.setNextDueDate(System.currentTimeMillis());
+            vocab.setConsecutiveCorrect(Vocab.DEFAULT_CONSECUTIVE_CORRECT);
+            //vocab.setInterval(Vocab.DEFAULT_INTERVAL_IN_DAYS);
             vocab.setEasinessFactor(Vocab.DEFAULT_EASINESS_FACTOR);
             new AddVocab().execute(vocab);
         } else {

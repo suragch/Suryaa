@@ -6,7 +6,6 @@ import android.content.res.AssetManager;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
 import android.util.Log;
 
 import net.studymongolian.suryaa.R;
@@ -124,9 +123,9 @@ class DatabaseHelper extends SQLiteOpenHelper {
             contentValues.put(VocabEntry.DEFINITION, definitions[i]);
             contentValues.put(VocabEntry.AUDIO_FILENAME, "");
             contentValues.put(VocabEntry.PRONUNCIATION, pronunciations[i]);
-            contentValues.put(VocabEntry.MONGOL_NEXT_PRACTICE_DATE, date);
-            contentValues.put(VocabEntry.DEFINITION_NEXT_PRACTICE_DATE, date);
-            contentValues.put(VocabEntry.PRONUNCIATION_NEXT_PRACTICE_DATE, date);
+            contentValues.put(VocabEntry.MONGOL_NEXT_DUE_DATE, date);
+            contentValues.put(VocabEntry.DEFINITION_NEXT_DUE_DATE, date);
+            contentValues.put(VocabEntry.PRONUNCIATION_NEXT_DUE_DATE, date);
             db.insert(VocabEntry.VOCAB_TABLE, null, contentValues);
             date++;
         }

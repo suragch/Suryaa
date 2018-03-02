@@ -79,9 +79,9 @@ public class DatabaseManager {
         long midnightTonight = date.getTimeInMillis();
 
 
-        String nextPracticeDateColumn = getNextPracticeDateColumnName(studyMode);
-        String nthTryColumn = getNthTryColumnName(studyMode);
-        String intervalColumn = getIntervalColumnName(studyMode);
+        String nextDueDateColumn = getNextDueDateColumnName(studyMode);
+        String consecutiveCorrectColumn = getConsecutiveCorrectColumnName(studyMode);
+        //String intervalColumn = getIntervalColumnName(studyMode);
         String eFactorColumn = getEasinessFactorColumnName(studyMode);
         SQLiteDatabase db = mHelper.getReadableDatabase();
         String[] columns = {
@@ -90,15 +90,14 @@ public class DatabaseManager {
                 VocabEntry.DEFINITION,
                 VocabEntry.PRONUNCIATION,
                 VocabEntry.AUDIO_FILENAME,
-                nextPracticeDateColumn,
-                nthTryColumn,
-                intervalColumn,
+                nextDueDateColumn,
+                consecutiveCorrectColumn,
                 eFactorColumn
         };
         String selection = VocabEntry.LIST_ID + " LIKE ? AND " +
-                nextPracticeDateColumn + " < " + midnightTonight;
+                nextDueDateColumn + " < " + midnightTonight;
         String[] selectionArgs = {String.valueOf(listId)};
-        String orderBy = nextPracticeDateColumn;
+        String orderBy = nextDueDateColumn;
         Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs,
                 null,null, orderBy, null);
         int indexId = cursor.getColumnIndex(VocabEntry.ID);
@@ -106,9 +105,8 @@ public class DatabaseManager {
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
         int indexAudio = cursor.getColumnIndex(VocabEntry.AUDIO_FILENAME);
-        int indexDate = cursor.getColumnIndex(nextPracticeDateColumn);
-        int indexNthTry = cursor.getColumnIndex(nthTryColumn);
-        int indexInterval = cursor.getColumnIndex(intervalColumn);
+        int indexDate = cursor.getColumnIndex(nextDueDateColumn);
+        int indexConsecutiveCorrect = cursor.getColumnIndex(consecutiveCorrectColumn);
         int indexEF = cursor.getColumnIndex(eFactorColumn);
 
         while (cursor.moveToNext()) {
@@ -119,9 +117,8 @@ public class DatabaseManager {
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
             vocabItem.setAudioFilename(cursor.getString(indexAudio));
-            vocabItem.setNextPracticeDate(cursor.getLong(indexDate));
-            vocabItem.setNthTry(cursor.getInt(indexNthTry));
-            vocabItem.setInterval(cursor.getInt(indexInterval));
+            vocabItem.setNextDueDate(cursor.getLong(indexDate));
+            vocabItem.setConsecutiveCorrect(cursor.getInt(indexConsecutiveCorrect));
             vocabItem.setEasinessFactor(cursor.getFloat(indexEF));
             vocabList.add(vocabItem);
         }
@@ -133,38 +130,38 @@ public class DatabaseManager {
 
     }
 
-    private String getNextPracticeDateColumnName(StudyMode studyMode) {
+    private String getNextDueDateColumnName(StudyMode studyMode) {
         switch (studyMode) {
             case DEFINITION:
-                return VocabEntry.DEFINITION_NEXT_PRACTICE_DATE;
+                return VocabEntry.DEFINITION_NEXT_DUE_DATE;
             case PRONUNCIATION:
-                return VocabEntry.PRONUNCIATION_NEXT_PRACTICE_DATE;
+                return VocabEntry.PRONUNCIATION_NEXT_DUE_DATE;
             default:
-                return VocabEntry.MONGOL_NEXT_PRACTICE_DATE;
+                return VocabEntry.MONGOL_NEXT_DUE_DATE;
         }
     }
 
-    private String getNthTryColumnName(StudyMode studyMode) {
+    private String getConsecutiveCorrectColumnName(StudyMode studyMode) {
         switch (studyMode) {
             case DEFINITION:
-                return VocabEntry.DEFINITION_NTH_TRY;
+                return VocabEntry.DEFINITION_CONSECUTIVE_CORRECT;
             case PRONUNCIATION:
-                return VocabEntry.PRONUNCIATION_NTH_TRY;
+                return VocabEntry.PRONUNCIATION_CONSECUTIVE_CORRECT;
             default:
-                return VocabEntry.MONGOL_NTH_TRY;
+                return VocabEntry.MONGOL_CONSECUTIVE_CORRECT;
         }
     }
 
-    private String getIntervalColumnName(StudyMode studyMode) {
-        switch (studyMode) {
-            case DEFINITION:
-                return VocabEntry.DEFINITION_INTERVAL;
-            case PRONUNCIATION:
-                return VocabEntry.PRONUNCIATION_INTERVAL;
-            default:
-                return VocabEntry.MONGOL_INTERVAL;
-        }
-    }
+//    private String getIntervalColumnName(StudyMode studyMode) {
+//        switch (studyMode) {
+//            case DEFINITION:
+//                return VocabEntry.DEFINITION_INTERVAL;
+//            case PRONUNCIATION:
+//                return VocabEntry.PRONUNCIATION_INTERVAL;
+//            default:
+//                return VocabEntry.MONGOL_INTERVAL;
+//        }
+//    }
 
     private String getEasinessFactorColumnName(StudyMode studyMode) {
         switch (studyMode) {
@@ -179,9 +176,8 @@ public class DatabaseManager {
 
     public Vocab getVocabItem(long vocabId, StudyMode studyMode) {
 
-        String nextPracticeDateColumn = getNextPracticeDateColumnName(studyMode);
-        String nthTryColumn = getNthTryColumnName(studyMode);
-        String intervalColumn = getIntervalColumnName(studyMode);
+        String nextDueDateColumn = getNextDueDateColumnName(studyMode);
+        String consecutiveCorrectColumn = getConsecutiveCorrectColumnName(studyMode);
         String eFactorColumn = getEasinessFactorColumnName(studyMode);
 
         SQLiteDatabase db = mHelper.getReadableDatabase();
@@ -192,9 +188,8 @@ public class DatabaseManager {
                 VocabEntry.DEFINITION,
                 VocabEntry.PRONUNCIATION,
                 VocabEntry.AUDIO_FILENAME,
-                nextPracticeDateColumn,
-                nthTryColumn,
-                intervalColumn,
+                nextDueDateColumn,
+                consecutiveCorrectColumn,
                 eFactorColumn
         };
         String selection = VocabEntry.ID + " LIKE ?";
@@ -208,9 +203,8 @@ public class DatabaseManager {
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
         int indexAudio = cursor.getColumnIndex(VocabEntry.AUDIO_FILENAME);
-        int indexDate = cursor.getColumnIndex(nextPracticeDateColumn);
-        int indexNthTry = cursor.getColumnIndex(nthTryColumn);
-        int indexInterval = cursor.getColumnIndex(intervalColumn);
+        int indexDate = cursor.getColumnIndex(nextDueDateColumn);
+        int indexNthTry = cursor.getColumnIndex(consecutiveCorrectColumn);
         int indexEF = cursor.getColumnIndex(eFactorColumn);
 
         Vocab vocabItem = new Vocab(studyMode);
@@ -221,9 +215,8 @@ public class DatabaseManager {
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
             vocabItem.setAudioFilename(cursor.getString(indexAudio));
-            vocabItem.setNextPracticeDate(cursor.getLong(indexDate));
-            vocabItem.setNthTry(cursor.getInt(indexNthTry));
-            vocabItem.setInterval(cursor.getInt(indexInterval));
+            vocabItem.setNextDueDate(cursor.getLong(indexDate));
+            vocabItem.setConsecutiveCorrect(cursor.getInt(indexNthTry));
             vocabItem.setEasinessFactor(cursor.getFloat(indexEF));
         }
 
@@ -242,19 +235,18 @@ public class DatabaseManager {
         contentValues.put(VocabEntry.PRONUNCIATION, entry.getPronunciation());
         contentValues.put(VocabEntry.AUDIO_FILENAME, entry.getAudioFilename());
 
-        contentValues.put(VocabEntry.MONGOL_NEXT_PRACTICE_DATE, entry.getNextPracticeDate());
-        contentValues.put(VocabEntry.MONGOL_NTH_TRY, entry.getNthTry());
-        contentValues.put(VocabEntry.MONGOL_INTERVAL, entry.getInterval());
+        contentValues.put(VocabEntry.MONGOL_NEXT_DUE_DATE, entry.getNextDueDate());
+        contentValues.put(VocabEntry.MONGOL_CONSECUTIVE_CORRECT, entry.getConsecutiveCorrect());
         contentValues.put(VocabEntry.MONGOL_EF, entry.getEasinessFactor());
 
-        contentValues.put(VocabEntry.DEFINITION_NEXT_PRACTICE_DATE, entry.getNextPracticeDate());
-        contentValues.put(VocabEntry.DEFINITION_NTH_TRY, entry.getNthTry());
-        contentValues.put(VocabEntry.DEFINITION_INTERVAL, entry.getInterval());
+        contentValues.put(VocabEntry.DEFINITION_NEXT_DUE_DATE, entry.getNextDueDate());
+        contentValues.put(VocabEntry.DEFINITION_CONSECUTIVE_CORRECT, entry.getConsecutiveCorrect());
+        //contentValues.put(VocabEntry.DEFINITION_INTERVAL, entry.getInterval());
         contentValues.put(VocabEntry.DEFINITION_EF, entry.getEasinessFactor());
 
-        contentValues.put(VocabEntry.PRONUNCIATION_NEXT_PRACTICE_DATE, entry.getNextPracticeDate());
-        contentValues.put(VocabEntry.PRONUNCIATION_NTH_TRY, entry.getNthTry());
-        contentValues.put(VocabEntry.PRONUNCIATION_INTERVAL, entry.getInterval());
+        contentValues.put(VocabEntry.PRONUNCIATION_NEXT_DUE_DATE, entry.getNextDueDate());
+        contentValues.put(VocabEntry.PRONUNCIATION_CONSECUTIVE_CORRECT, entry.getConsecutiveCorrect());
+        //contentValues.put(VocabEntry.PRONUNCIATION_INTERVAL, entry.getInterval());
         contentValues.put(VocabEntry.PRONUNCIATION_EF, entry.getEasinessFactor());
 
         SQLiteDatabase db = mHelper.getWritableDatabase();
@@ -276,19 +268,19 @@ public class DatabaseManager {
                 contentValues.put(VocabEntry.PRONUNCIATION, item.getPronunciation());
                 contentValues.put(VocabEntry.AUDIO_FILENAME, item.getAudioFilename());
 
-                contentValues.put(VocabEntry.MONGOL_NEXT_PRACTICE_DATE, item.getNextPracticeDate());
-                contentValues.put(VocabEntry.MONGOL_NTH_TRY, item.getNthTry());
-                contentValues.put(VocabEntry.MONGOL_INTERVAL, item.getInterval());
+                contentValues.put(VocabEntry.MONGOL_NEXT_DUE_DATE, item.getNextDueDate());
+                contentValues.put(VocabEntry.MONGOL_CONSECUTIVE_CORRECT, item.getConsecutiveCorrect());
+                //contentValues.put(VocabEntry.MONGOL_INTERVAL, item.getInterval());
                 contentValues.put(VocabEntry.MONGOL_EF, item.getEasinessFactor());
 
-                contentValues.put(VocabEntry.DEFINITION_NEXT_PRACTICE_DATE, item.getNextPracticeDate());
-                contentValues.put(VocabEntry.DEFINITION_NTH_TRY, item.getNthTry());
-                contentValues.put(VocabEntry.DEFINITION_INTERVAL, item.getInterval());
+                contentValues.put(VocabEntry.DEFINITION_NEXT_DUE_DATE, item.getNextDueDate());
+                contentValues.put(VocabEntry.DEFINITION_CONSECUTIVE_CORRECT, item.getConsecutiveCorrect());
+                //contentValues.put(VocabEntry.DEFINITION_INTERVAL, item.getInterval());
                 contentValues.put(VocabEntry.DEFINITION_EF, item.getEasinessFactor());
 
-                contentValues.put(VocabEntry.PRONUNCIATION_NEXT_PRACTICE_DATE, item.getNextPracticeDate());
-                contentValues.put(VocabEntry.PRONUNCIATION_NTH_TRY, item.getNthTry());
-                contentValues.put(VocabEntry.PRONUNCIATION_INTERVAL, item.getInterval());
+                contentValues.put(VocabEntry.PRONUNCIATION_NEXT_DUE_DATE, item.getNextDueDate());
+                contentValues.put(VocabEntry.PRONUNCIATION_CONSECUTIVE_CORRECT, item.getConsecutiveCorrect());
+                //contentValues.put(VocabEntry.PRONUNCIATION_INTERVAL, item.getInterval());
                 contentValues.put(VocabEntry.PRONUNCIATION_EF, item.getEasinessFactor());
 
                 db.insert(VocabEntry.VOCAB_TABLE, null, contentValues);
@@ -305,9 +297,8 @@ public class DatabaseManager {
     public int updateVocabItem(Vocab updatedItem) {
 
         StudyMode studyMode = updatedItem.getStudyMode();
-        String nextPracticeDateColumn = getNextPracticeDateColumnName(studyMode);
-        String nthTryColumn = getNthTryColumnName(studyMode);
-        String intervalColumn = getIntervalColumnName(studyMode);
+        String nextDueDateColumn = getNextDueDateColumnName(studyMode);
+        String consecutiveCorrectColumn = getConsecutiveCorrectColumnName(studyMode);
         String eFactorColumn = getEasinessFactorColumnName(studyMode);
 
         ContentValues contentValues = new ContentValues();
@@ -316,9 +307,8 @@ public class DatabaseManager {
         contentValues.put(VocabEntry.DEFINITION, updatedItem.getDefinition());
         contentValues.put(VocabEntry.PRONUNCIATION, updatedItem.getPronunciation());
         contentValues.put(VocabEntry.AUDIO_FILENAME, updatedItem.getAudioFilename());
-        contentValues.put(nextPracticeDateColumn, updatedItem.getNextPracticeDate());
-        contentValues.put(nthTryColumn, updatedItem.getNthTry());
-        contentValues.put(intervalColumn, updatedItem.getInterval());
+        contentValues.put(nextDueDateColumn, updatedItem.getNextDueDate());
+        contentValues.put(consecutiveCorrectColumn, updatedItem.getConsecutiveCorrect());
         contentValues.put(eFactorColumn, updatedItem.getEasinessFactor());
 
         String selection = VocabEntry.ID + " LIKE ?";
@@ -335,18 +325,15 @@ public class DatabaseManager {
             long vocabId,
             long nextPracticeDate,
             int nthTry,
-            int interval,
             float eFactor) {
 
-        String nextPracticeDateColumn = getNextPracticeDateColumnName(studyMode);
-        String nthTryColumn = getNthTryColumnName(studyMode);
-        String intervalColumn = getIntervalColumnName(studyMode);
+        String nextDueDateColumn = getNextDueDateColumnName(studyMode);
+        String consecutiveCorrectColumn = getConsecutiveCorrectColumnName(studyMode);
         String eFactorColumn = getEasinessFactorColumnName(studyMode);
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put(nextPracticeDateColumn, nextPracticeDate);
-        contentValues.put(nthTryColumn, nthTry);
-        contentValues.put(intervalColumn, interval);
+        contentValues.put(nextDueDateColumn, nextPracticeDate);
+        contentValues.put(consecutiveCorrectColumn, nthTry);
         contentValues.put(eFactorColumn, eFactor);
 
         String selection = VocabEntry.ID + " LIKE ?";

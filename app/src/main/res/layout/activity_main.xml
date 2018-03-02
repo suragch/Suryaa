@@ -55,71 +55,70 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+
             <TextView
-                android:id="@+id/response_button_1"
-                android:text="Again"
-                android:textColor="@color/textColorPrimary"
-                android:padding="10dp"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onResponseButtonClick"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/btn_default"
+                android:id="@+id/response_button_0"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:text="@string/main_response_button_0"
+                android:onClick="onResponseButtonClick"
+                style="@style/responseButtonStyle"
+                />
+
+            <TextView
+                android:id="@+id/response_button_1"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="@string/main_response_button_1"
+                android:onClick="onResponseButtonClick"
+                style="@style/responseButtonStyle"
+                />
 
             <TextView
                 android:id="@+id/response_button_2"
-                android:text="Day"
-                android:textColor="@color/textColorPrimary"
-                android:padding="10dp"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onResponseButtonClick"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/btn_default"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:text="@string/main_response_button_2"
+                android:onClick="onResponseButtonClick"
+                style="@style/responseButtonStyle"
+                />
 
             <TextView
                 android:id="@+id/response_button_3"
-                android:text="Week"
-                android:textColor="@color/textColorPrimary"
-                android:padding="10dp"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onResponseButtonClick"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/btn_default"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:text="@string/main_response_button_3"
+                android:onClick="onResponseButtonClick"
+                style="@style/responseButtonStyle"
+                />
+
 
             <TextView
                 android:id="@+id/response_button_4"
-                android:text="Month"
-                android:textColor="@color/textColorPrimary"
-                android:padding="10dp"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onResponseButtonClick"
-                android:layout_margin="10dp"
-                android:background="@drawable/btn_default"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:text="@string/main_response_button_4"
+                android:onClick="onResponseButtonClick"
+                style="@style/responseButtonStyle"
+                />
+
+            <TextView
+                android:id="@+id/response_button_5"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:text="@string/main_response_button_5"
+                android:onClick="onResponseButtonClick"
+                style="@style/responseButtonStyle"
+                />
+
 
         </LinearLayout>
     </FrameLayout>

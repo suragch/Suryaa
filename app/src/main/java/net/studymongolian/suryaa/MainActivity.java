@@ -27,7 +27,6 @@ import net.studymongolian.suryaa.database.DatabaseManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -37,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int LIST_ACTIVITY_REQUEST_CODE = 0;
     private static final int ADD_WORD_ACTIVITY_REQUEST_CODE = 1;
     private static final int SETTINGS_ACTIVITY_REQUEST_CODE = 2;
-    private static final String LOG_TAG = "MainActivity";
     private static final String TAG = "MainActivity";
 
     private TextView mNumberOfWordsView;
@@ -55,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mPlayer = null;
     private boolean mLocked = false; // don't allow operations during db background tasks
     private StudyMode mStudyMode = StudyMode.MONGOL;
+    private int ALREADY_VIEWED_TODAY = -1;
+    private int MIN_QUALITY_FOR_CORRECT = 3;
+    private int SECONDS_IN_A_DAY = 86400;
+    private int DEFAULT_INTERVAL = 6;
 
 
     @Override
@@ -159,37 +161,38 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) return;
 
         switch (requestCode) {
             case LIST_ACTIVITY_REQUEST_CODE:
 
                 // get String data from Intent
-                long listId = -1;
+                //long listId = -1;
                 if (data != null) {
-                    listId = data.getLongExtra(ListsActivity.LIST_ID_KEY, -1);
+                    long listId = data.getLongExtra(ListsActivity.LIST_ID_KEY, -1);
+                    new GetTodaysVocab().execute(listId);
                 }
-                new GetTodaysVocab().execute(listId);
 
                 break;
             case ADD_WORD_ACTIVITY_REQUEST_CODE:
-                if (resultCode == RESULT_OK) {
+                //if (resultCode == RESULT_OK) {
 
-                    boolean wordsAdded = data.getBooleanExtra(AddEditWordActivity.WORDS_ADDED_KEY, false);
-                    if (wordsAdded) {
-                        new GetTodaysVocab().execute(mCurrentList.getListId());
-                        return;
-                    }
-
-                    boolean wordEdited = data.getBooleanExtra(AddEditWordActivity.EDIT_MODE_KEY, false);
-                    if (wordEdited) {
-                        new RefreshVocabItem().execute(mCurrentVocabItem.getId());
-                    }
+                boolean wordsAdded = data.getBooleanExtra(AddEditWordActivity.WORDS_ADDED_KEY, false);
+                if (wordsAdded) {
+                    new GetTodaysVocab().execute(mCurrentList.getListId());
+                    return;
                 }
+
+                boolean wordEdited = data.getBooleanExtra(AddEditWordActivity.EDIT_MODE_KEY, false);
+                if (wordEdited) {
+                    new RefreshVocabItem().execute(mCurrentVocabItem.getId());
+                }
+                //}
                 break;
             case SETTINGS_ACTIVITY_REQUEST_CODE:
-                if (resultCode == RESULT_OK) {
-                    recreate();
-                }
+                //if (resultCode == RESULT_OK) {
+                recreate();
+                //}
                 break;
         }
 
@@ -221,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                 mPlayer.prepare();
                 mPlayer.start();
             } catch (IOException e) {
-                Log.e(LOG_TAG, "prepare() failed");
+                Log.e(TAG, "prepare() failed");
             }
         }
     };
@@ -236,8 +239,8 @@ public class MainActivity extends AppCompatActivity {
         String dirPath = externalDir.getAbsolutePath();
         String pathName =
                 dirPath + File.separator +
-                mCurrentVocabItem.getListId() + File.separator +
-                filename;
+                        mCurrentVocabItem.getListId() + File.separator +
+                        filename;
         return pathName;
     }
 
@@ -269,31 +272,104 @@ public class MainActivity extends AppCompatActivity {
     public void onResponseButtonClick(View view) {
         if (mLocked) return;
 
-        switch (view.getId()) {
-            case R.id.response_button_1:
-                mTodaysQuestions.add(mCurrentVocabItem);
-                prepareNextQuestion();
-                break;
-            case R.id.response_button_2:
-                Calendar tomorrow = Calendar.getInstance();
-                tomorrow.add(Calendar.DATE, 1);
-                mCurrentVocabItem.setNextPracticeDate(tomorrow.getTimeInMillis());
-                new UpdateVocabPracticeData().execute(mCurrentVocabItem);
-                break;
-            case R.id.response_button_3:
-                Calendar nextWeek = Calendar.getInstance();
-                nextWeek.add(Calendar.DATE, 7);
-                mCurrentVocabItem.setNextPracticeDate(nextWeek.getTimeInMillis());
-                new UpdateVocabPracticeData().execute(mCurrentVocabItem);
-                break;
-            case R.id.response_button_4:
-                Calendar nextMonth = Calendar.getInstance();
-                nextMonth.add(Calendar.DATE, 30);
-                mCurrentVocabItem.setNextPracticeDate(nextMonth.getTimeInMillis());
-                new UpdateVocabPracticeData().execute(mCurrentVocabItem);
-                break;
-        }
+        int response = getResponseValue(view.getId());
 
+
+        if (mCurrentVocabItem.isFirstViewToday()) {
+            calculateSuperMemo2Algorithm(mCurrentVocabItem, response);
+            new UpdateVocabPracticeData().execute(mCurrentVocabItem);
+            //mCurrentVocabItem.setInterval(ALREADY_VIEWED_TODAY);
+            mCurrentVocabItem.setFirstViewToday(false);
+        } else {
+            mTodaysQuestions.add(mCurrentVocabItem);
+        }
+        prepareNextQuestion();
+
+
+
+
+//        Calendar nextMonth = Calendar.getInstance();
+//        nextMonth.add(Calendar.DATE, 30);
+//        mCurrentVocabItem.setNextDueDate(nextMonth.getTimeInMillis());
+//        Calendar nextWeek = Calendar.getInstance();
+//        nextWeek.add(Calendar.DATE, 7);
+//        mCurrentVocabItem.setNextDueDate(nextWeek.getTimeInMillis());
+//        new UpdateVocabPracticeData().execute(mCurrentVocabItem);
+//        Calendar tomorrow = Calendar.getInstance();
+//        tomorrow.add(Calendar.DATE, 1);
+//        mCurrentVocabItem.setNextDueDate(tomorrow.getTimeInMillis());
+//        new UpdateVocabPracticeData().execute(mCurrentVocabItem);
+//
+//        mTodaysQuestions.add(mCurrentVocabItem);
+
+    }
+
+    private void calculateSuperMemo2Algorithm(Vocab mCurrentVocabItem, int quality) {
+        // algorithm based on:
+        // https://www.supermemo.com/english/ol/sm2.htm
+        // http://www.blueraja.com/blog/477/a-better-spaced-repetition-learning-algorithm-sm2
+        // TODO improve algorithm
+        // https://www.supermemo.com/help/smalg.htm
+
+        float easiness = mCurrentVocabItem.getEasinessFactor();
+        int consecutiveCorrect = mCurrentVocabItem.getConsecutiveCorrect();
+        //int interval = mCurrentVocabItem.getInterval();
+
+        easiness = (float) Math.max(1.3, easiness - 0.8 + 0.28*quality - 0.02*quality*quality);
+
+        // consecutive correct
+        boolean answerIsCorrect = quality >= MIN_QUALITY_FOR_CORRECT;
+        if (answerIsCorrect)
+            consecutiveCorrect++;
+        else
+            consecutiveCorrect = 0;
+
+        int nextDueDate;
+        long now = System.currentTimeMillis();
+        if (answerIsCorrect)
+            nextDueDate = (int) (now
+                    + SECONDS_IN_A_DAY * DEFAULT_INTERVAL
+                    * Math.pow(easiness, consecutiveCorrect - 1));
+        else
+            nextDueDate = (int) (now + SECONDS_IN_A_DAY);
+
+        mCurrentVocabItem.setEasinessFactor(easiness);
+        mCurrentVocabItem.setConsecutiveCorrect(consecutiveCorrect);
+        mCurrentVocabItem.setNextDueDate(nextDueDate);
+
+    }
+
+//    private boolean answerIsCorrect(int quality) {
+//        return quality >= MIN_QUALITY_FOR_CORRECT;
+//    }
+//
+//    private int getInterval(int n, float easinessFactor) {
+//        if (n <= 1) return 1;
+//        if (n == 2) return 6;
+//
+//    }
+
+//    private boolean isFirstTimeViewingThisWordToday() {
+//        return mCurrentVocabItem.getInterval() != ALREADY_VIEWED_TODAY;
+//    }
+
+    private int getResponseValue(int viewId) {
+        switch (viewId) {
+            case R.id.response_button_0:
+                return 0;
+            case R.id.response_button_1:
+                return 1;
+            case R.id.response_button_2:
+                return 2;
+            case R.id.response_button_3:
+                return 3;
+            case R.id.response_button_4:
+                return 4;
+            case R.id.response_button_5:
+                return 5;
+            default:
+                return 0;
+        }
     }
 
     private void prepareNextQuestion() {
@@ -420,16 +496,16 @@ public class MainActivity extends AppCompatActivity {
 
             Vocab item = params[0];
             final long id = item.getId();
-            final long nextPracticeDate = item.getNextPracticeDate();
-            final int nthTry = item.getNthTry();
-            final int interval = item.getInterval();
+            final long nextDueDate = item.getNextDueDate();
+            final int consecutiveCorrect = item.getConsecutiveCorrect();
+            //final int interval = item.getInterval();
             final float eFactor = item.getEasinessFactor();
 
             try {
 
                 DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
                 dbAdapter.updateVocabItemPracticeData(
-                        mStudyMode, id, nextPracticeDate, nthTry, interval, eFactor);
+                        mStudyMode, id, nextDueDate, consecutiveCorrect, eFactor);
                 // TODO if audio file was updated then change
             } catch (Exception e) {
                 Log.i("app", e.toString());
@@ -441,7 +517,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void results) {
             mLocked = false;
-            prepareNextQuestion();
         }
 
     }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="net.studymongolian.suryaa">
+    package="net.studymongolian.suryaa">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -14,22 +14,30 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:label="@string/lists_activity_title"
-                  android:name=".ListsActivity"/>
-        <activity android:label="@string/add_word_activity_title"
-                  android:windowSoftInputMode="stateHidden|adjustPan"
-                  android:name=".AddEditWordActivity"/>
-        <activity android:label="@string/all_words_activity_title"
-                  android:name=".AllWordsActivity"/>
-        <activity android:label="@string/settings_activity_title"
-                  android:name=".SettingsActivity"/>
-        <activity android:label="@string/about_activity_title"
-                  android:name=".AboutActivity"/>
+        <activity
+            android:name=".ListsActivity"
+            android:label="@string/lists_activity_title" />
+        <activity
+            android:name=".AddEditWordActivity"
+            android:label="@string/add_word_activity_title"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name=".AllWordsActivity"
+            android:label="@string/all_words_activity_title" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/settings_activity_title" />
+        <activity
+            android:name=".HelpActivity"
+            android:label="@string/help_activity_title" />
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/about_activity_title" />
     </application>
 
 </manifest>

@@ -19,6 +19,7 @@ public class SettingsActivity extends AppCompatActivity {
     static final String KEY_PREF_NIGHT_MODE = "pref_night_mode"; // also in preferences.xml
     static final String KEY_PREF_FONT = "pref_font"; // also in preferences.xml
     static final String KEY_PREF_FONT_DEFAULT = "printing"; // also in preferences.xml
+    static final String KEY_PREF_HELP = "pref_help"; // also in preferences.xml
     static final String KEY_PREF_ABOUT = "pref_about"; // also in preferences.xml
 
     public static final String QIMED = "fonts/MQD8102.ttf";         // Handwriting font
@@ -89,18 +90,42 @@ public class SettingsActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
 
+            setAboutClickListener();
+            setHelpClickListener();
+        }
+
+        private void setAboutClickListener() {
             Preference pref = getPreferenceManager().findPreference(KEY_PREF_ABOUT);
-            pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (preference.getKey().equals(KEY_PREF_ABOUT)) {
-                        Intent intent = new Intent(getActivity(), AboutActivity.class);
-                        startActivity(intent);
-                        return true;
+            if (pref != null) {
+                pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        if (preference.getKey().equals(KEY_PREF_ABOUT)) {
+                            Intent intent = new Intent(getActivity(), AboutActivity.class);
+                            startActivity(intent);
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
-                }
-            });
+                });
+            }
+        }
+
+        private void setHelpClickListener() {
+            Preference pref = getPreferenceManager().findPreference(KEY_PREF_HELP);
+            if (pref != null) {
+                pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        if (preference.getKey().equals(KEY_PREF_HELP)) {
+                            Intent intent = new Intent(getActivity(), HelpActivity.class);
+                            startActivity(intent);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+            }
         }
 
         @Override
