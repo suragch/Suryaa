@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.studymongolian.mongollibrary.MongolFont;
 import net.studymongolian.mongollibrary.MongolLabel;
@@ -27,6 +29,7 @@ import net.studymongolian.suryaa.database.DatabaseManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -53,10 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mPlayer = null;
     private boolean mLocked = false; // don't allow operations during db background tasks
     private StudyMode mStudyMode = StudyMode.MONGOL;
-    private int ALREADY_VIEWED_TODAY = -1;
-    private int MIN_QUALITY_FOR_CORRECT = 3;
-    private int SECONDS_IN_A_DAY = 86400;
-    private int DEFAULT_INTERVAL = 6;
+    //private int ALREADY_VIEWED_TODAY = -1;
+    private static final int MIN_QUALITY_FOR_CORRECT = 3;
+    private static final int MILLISECONDS_IN_A_DAY = 86400000;
+    private static final int DEFAULT_INTERVAL = 6;
 
 
     @Override
@@ -213,12 +216,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             String pathName = getPathForCurrentAudioFile();
-            if (pathName == null) return; // TODO should hide the button
+            if (pathName == null) {
+                v.setVisibility(View.INVISIBLE);
+                return;
+            }
             if (mPlayer != null) {
                 mPlayer.release();
                 mPlayer = null;
             }
             mPlayer = new MediaPlayer();
+            setPlayingImage();
+            changeImageBackWhenFinishedPlaying();
             try {
                 mPlayer.setDataSource(pathName);
                 mPlayer.prepare();
@@ -227,6 +235,21 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "prepare() failed");
             }
         }
+
+        private void setPlayingImage() {
+            mPlayButton.setImageResource(R.drawable.play_button_playing);
+        }
+
+        private void changeImageBackWhenFinishedPlaying() {
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mPlayButton.setImageResource(R.drawable.play_button);
+                }
+            });
+        }
+
+
     };
 
     private String getPathForCurrentAudioFile() {
@@ -237,11 +260,9 @@ public class MainActivity extends AppCompatActivity {
         if (externalDir == null) return null;
 
         String dirPath = externalDir.getAbsolutePath();
-        String pathName =
-                dirPath + File.separator +
-                        mCurrentVocabItem.getListId() + File.separator +
-                        filename;
-        return pathName;
+        return dirPath + File.separator +
+                mCurrentVocabItem.getListId() + File.separator +
+                filename;
     }
 
     private void deleteWord() {
@@ -276,35 +297,23 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (mCurrentVocabItem.isFirstViewToday()) {
-            calculateSuperMemo2Algorithm(mCurrentVocabItem, response);
+            calculateSuperMemo2Algorithm(response);
             new UpdateVocabPracticeData().execute(mCurrentVocabItem);
-            //mCurrentVocabItem.setInterval(ALREADY_VIEWED_TODAY);
             mCurrentVocabItem.setFirstViewToday(false);
         } else {
             mTodaysQuestions.add(mCurrentVocabItem);
         }
+        showNextDueDate();
         prepareNextQuestion();
-
-
-
-
-//        Calendar nextMonth = Calendar.getInstance();
-//        nextMonth.add(Calendar.DATE, 30);
-//        mCurrentVocabItem.setNextDueDate(nextMonth.getTimeInMillis());
-//        Calendar nextWeek = Calendar.getInstance();
-//        nextWeek.add(Calendar.DATE, 7);
-//        mCurrentVocabItem.setNextDueDate(nextWeek.getTimeInMillis());
-//        new UpdateVocabPracticeData().execute(mCurrentVocabItem);
-//        Calendar tomorrow = Calendar.getInstance();
-//        tomorrow.add(Calendar.DATE, 1);
-//        mCurrentVocabItem.setNextDueDate(tomorrow.getTimeInMillis());
-//        new UpdateVocabPracticeData().execute(mCurrentVocabItem);
-//
-//        mTodaysQuestions.add(mCurrentVocabItem);
-
     }
 
-    private void calculateSuperMemo2Algorithm(Vocab mCurrentVocabItem, int quality) {
+    private void showNextDueDate() {
+        long nextDueDate = mCurrentVocabItem.getNextDueDate();
+        String dateString = DateFormat.format("MM/dd/yyyy", new Date(nextDueDate)).toString();
+        Toast.makeText(this, dateString, Toast.LENGTH_SHORT).show();
+    }
+
+    private void calculateSuperMemo2Algorithm(int quality) {
         // algorithm based on:
         // https://www.supermemo.com/english/ol/sm2.htm
         // http://www.blueraja.com/blog/477/a-better-spaced-repetition-learning-algorithm-sm2
@@ -324,34 +333,20 @@ public class MainActivity extends AppCompatActivity {
         else
             consecutiveCorrect = 0;
 
-        int nextDueDate;
+        long nextDueDate;
         long now = System.currentTimeMillis();
         if (answerIsCorrect)
-            nextDueDate = (int) (now
-                    + SECONDS_IN_A_DAY * DEFAULT_INTERVAL
+            nextDueDate = (long) (now
+                    + MILLISECONDS_IN_A_DAY * DEFAULT_INTERVAL
                     * Math.pow(easiness, consecutiveCorrect - 1));
         else
-            nextDueDate = (int) (now + SECONDS_IN_A_DAY);
+            nextDueDate = now + MILLISECONDS_IN_A_DAY;
 
         mCurrentVocabItem.setEasinessFactor(easiness);
         mCurrentVocabItem.setConsecutiveCorrect(consecutiveCorrect);
         mCurrentVocabItem.setNextDueDate(nextDueDate);
 
     }
-
-//    private boolean answerIsCorrect(int quality) {
-//        return quality >= MIN_QUALITY_FOR_CORRECT;
-//    }
-//
-//    private int getInterval(int n, float easinessFactor) {
-//        if (n <= 1) return 1;
-//        if (n == 2) return 6;
-//
-//    }
-
-//    private boolean isFirstTimeViewingThisWordToday() {
-//        return mCurrentVocabItem.getInterval() != ALREADY_VIEWED_TODAY;
-//    }
 
     private int getResponseValue(int viewId) {
         switch (viewId) {
@@ -498,7 +493,6 @@ public class MainActivity extends AppCompatActivity {
             final long id = item.getId();
             final long nextDueDate = item.getNextDueDate();
             final int consecutiveCorrect = item.getConsecutiveCorrect();
-            //final int interval = item.getInterval();
             final float eFactor = item.getEasinessFactor();
 
             try {

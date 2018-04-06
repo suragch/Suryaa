@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="colorPrimary">@color/colorPrimaryNight</color>
+    <color name="colorPrimaryDark">@color/colorPrimaryDarkNight</color>
+    <color name="colorAccent">@color/colorAccentNight</color>
+
     <color name="textColorPrimary">#FFFFFFFF</color>
     <color name="cardAndDialogColor">#424242</color>
     <color name="buttonPressed">#212121</color>
+
+    <color name="color_0">#d70000</color>
+    <color name="color_1">#910000</color>
+    <color name="color_2">#4b0000</color>
+    <color name="color_3">#082701</color>
+    <color name="color_4">#156801</color>
+    <color name="color_5">#1d9302</color>
 
 </resources>

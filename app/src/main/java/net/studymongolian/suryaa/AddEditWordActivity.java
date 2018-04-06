@@ -1,6 +1,7 @@
 package net.studymongolian.suryaa;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -24,12 +25,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import net.studymongolian.mongollibrary.ImeContainer;
+import net.studymongolian.mongollibrary.Keyboard;
+import net.studymongolian.mongollibrary.KeyboardAeiou;
 import net.studymongolian.mongollibrary.MongolEditText;
 import net.studymongolian.mongollibrary.MongolFont;
 import net.studymongolian.mongollibrary.MongolInputMethodManager;
@@ -50,6 +54,7 @@ public class AddEditWordActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "AddEditWordActivity";
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private static final int ADDING_WOPD = -1;
     private static File mTempAudioFilePathName = null;
 
     ImageView mRecordButton;
@@ -62,6 +67,7 @@ public class AddEditWordActivity extends AppCompatActivity {
     MongolEditText mongolEditText;
     EditText etDefinition;
     EditText etPronunciation;
+    MyInputMethodService imeContainer;
 
     private long mCurrentListId;
     private Vocab mEditingWord;
@@ -70,7 +76,6 @@ public class AddEditWordActivity extends AppCompatActivity {
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
     private String[] permissions = {Manifest.permission.RECORD_AUDIO};
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +89,7 @@ public class AddEditWordActivity extends AppCompatActivity {
         }
 
         Intent intent = getIntent();
-        long editingWordId = intent.getLongExtra(WORD_ID_KEY, -1); // -1 means adding new word, not editing
+        long editingWordId = intent.getLongExtra(WORD_ID_KEY, ADDING_WOPD);
         mCurrentListId = intent.getLongExtra(MainActivity.LIST_ID_KEY, 1);
 
         ImageView mRecordButton = findViewById(R.id.ivRecordButton);
@@ -99,16 +104,17 @@ public class AddEditWordActivity extends AppCompatActivity {
         mongolEditText = findViewById(R.id.metMongolWord);
         etDefinition = findViewById(R.id.etDefinition);
         etPronunciation = findViewById(R.id.etPronunciation);
-        ImeContainer imeContainer = findViewById(R.id.keyboard_container);
+        imeContainer = findViewById(R.id.keyboard_container);
 
-        MongolInputMethodManager mimm = new MongolInputMethodManager();
-        mimm.addEditor(etDefinition);
-        mimm.addEditor(etPronunciation);
-        mimm.addEditor(mongolEditText);
+        MyMimm mimm = new MyMimm();
+        mimm.addEditor(etDefinition, true);
+        mimm.addEditor(etPronunciation, false);
+        mimm.addEditor(mongolEditText, false);
         mimm.setIme(imeContainer);
-        mimm.setAllowSystemSoftInput(MongolInputMethodManager.SYSTEM_EDITOR_ONLY);
-        mimm.startInput();
+        //mimm.setAllowSystemSoftInput(MongolInputMethodManager.SYSTEM_EDITOR_ONLY);
 
+        //mongolEditText.setOnFocusChangeListener(mongolFocusChangeListener);
+        //etPronunciation.setOnFocusChangeListener(pronunciationFocusChangeListener);
         deleteTempFile();
 
         // set the MongolFont
@@ -124,6 +130,42 @@ public class AddEditWordActivity extends AppCompatActivity {
             new LoadEditingWord().execute(editingWordId);
         }
     }
+
+    private View.OnFocusChangeListener mongolFocusChangeListener = new View.OnFocusChangeListener() {
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            if (hasFocus) {
+                //hideSystemKeyboard(v);
+                //showMongolAeiouKeyboard();
+            }
+        }
+    };
+
+    private void hideSystemKeyboard(View v) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        if (imm != null)
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
+    private void showMongolAeiouKeyboard() {
+        Keyboard aeiou = (Keyboard) imeContainer.getChildAt(0);
+        imeContainer.onRequestNewKeyboard(aeiou.getDisplayName());
+    }
+
+    private void showIpaKeyboard() {
+        Keyboard aeiou = (Keyboard) imeContainer.getChildAt(0);
+        imeContainer.onRequestNewKeyboard(aeiou.getDisplayName());
+    }
+
+    private View.OnFocusChangeListener pronunciationFocusChangeListener = new View.OnFocusChangeListener() {
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            if (hasFocus) {
+                hideSystemKeyboard(v);
+                showIpaKeyboard();
+            }
+        }
+    };
 
     private View.OnTouchListener mRecordListener = new View.OnTouchListener() {
         @Override

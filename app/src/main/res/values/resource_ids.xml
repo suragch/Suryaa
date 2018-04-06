@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <drawable name="play_button">@drawable/ic_play_circle_filled_black_48dp</drawable>
+    <drawable name="play_button_playing">@drawable/ic_play_circle_outline_black_48dp</drawable>
+</resources>

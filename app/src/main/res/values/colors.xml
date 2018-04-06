@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorPrimary">#43a047</color>
+    <color name="colorPrimaryDark">#00701a</color>
+    <color name="colorAccent">#ff8a80</color>
+    <color name="textColorPrimary">#000000</color>
+    <!---->
+    <!--<color name="colorPrimary">#3F51B5</color>-->
+    <!--<color name="colorPrimaryDark">#303F9F</color>-->
+    <!--<color name="colorAccent">#FF4081</color>-->
 
     <color name="colorPrimaryNight">#212121</color>
     <color name="colorPrimaryDarkNight">#000000</color>
-    <color name="colorAccentNight">#FF4081</color>
+    <color name="colorAccentNight">#ff8a80</color>
 
-    <color name="textColorPrimary">#DE000000</color>
+    <!--<color name="textColorPrimary">#DE000000</color>-->
     <color name="cardAndDialogColor">#FFFFFF</color>
     <color name="buttonPressed">#F5F5F5</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+
+    <color name="color_0">#ff2c2c</color>
+    <color name="color_1">#ff6a6b</color>
+    <color name="color_2">#ffa7a7</color>
+    <color name="color_3">#c0e8b7</color>
+    <color name="color_4">#6eca58</color>
+    <color name="color_5">#2cb40d</color>
+
+
 </resources>

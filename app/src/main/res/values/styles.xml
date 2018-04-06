@@ -21,7 +21,7 @@
     </style>
 
     <style name="playButtonStyle" parent="AppTheme">
-        <item name="android:background">@drawable/ic_play_circle_filled_black_48dp</item>
+        <item name="android:src">@drawable/ic_play_circle_filled_black_48dp</item>
     </style>
 
     <style name="responseButtonStyle" parent="AppTheme">
@@ -34,7 +34,18 @@
         <item name="android:layout_marginBottom">10dp</item>
         <item name="android:layout_marginLeft">5dp</item>
         <item name="android:layout_marginRight">5dp</item>
-        <item name="android:background">@drawable/btn_default</item>
+    </style>
+
+    <style name="KeyboardStyle" parent="AppTheme">
+        <item name="keyColor">@color/colorPrimary</item>
+        <item name="keyPressedColor">@color/colorAccent</item>
+        <item name="primaryTextColor">@color/textColorPrimary</item>
+        <item name="secondaryTextColor">@color/textColorPrimary</item>
+        <item name="keyImageTheme">light</item>
+        <item name="keySpacing">2dp</item>
+        <item name="keyBorderRadius">3dp</item>
+        <item name="popupTextColor">@color/textColorPrimary</item>
+        <item name="popupHighlightColor">@color/colorPrimary</item>
     </style>
 
 </resources>

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "26.0.2"
+    buildToolsVersion '27.0.3'
     defaultConfig {
         resValue "string", "app_name", "Suryaa"
         applicationId "net.studymongolian.suryaa"
@@ -34,5 +34,5 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'net.studymongolian:mongol-library:0.9.16'
+    implementation 'net.studymongolian:mongol-library:1.1.0'
 }
