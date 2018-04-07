@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -10,6 +9,7 @@
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -71,7 +71,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/etPronunciation"
-                android:layout_margin="30dp"
+                android:layout_margin="20dp"
+                android:padding="20dp"
                 android:contentDescription="@string/record_audio_content_description"
                 android:src="@drawable/ic_fiber_manual_record_black_48dp"
                 android:tint="@android:color/holo_red_dark" />
@@ -82,7 +83,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/etPronunciation"
-                android:layout_margin="30dp"
+                android:layout_margin="20dp"
+                android:padding="20dp"
+                android:visibility="invisible"
                 android:layout_toRightOf="@id/ivRecordButton"
                 android:contentDescription="@string/play_audio_content_description" />
 

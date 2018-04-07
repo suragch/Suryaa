@@ -18,5 +18,6 @@
     <string name="main_response_button_3">3</string>
     <string name="main_response_button_5">5</string>
     <string name="help_activity_title">Help</string>
+    <string name="add_edit_word_activity_edit_title">Edit word</string>
 
 </resources>

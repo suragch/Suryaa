@@ -1,11 +1,13 @@
 package net.studymongolian.suryaa;
 
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +15,8 @@ import android.widget.Toast;
 
 import net.studymongolian.suryaa.database.DatabaseManager;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
@@ -23,8 +27,10 @@ import java.util.Locale;
 public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAdapter.ItemClickListener {
 
 
+    private static final String TAG = "AllWordsActivity";
     private List<Vocab> mWordList;
     private AllWordsRvAdapter adapter;
+    private MediaPlayer mPlayer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,14 +50,38 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
 
     @Override
     public void onItemClick(View view, int position) {
+        Vocab item = adapter.getItem(position);
+        playAudio(item);
+    }
 
-        // TODO play audio
-//        Date date = new Date(mWordList.get(position).getDate());
-//        java.text.DateFormat df = SimpleDateFormat.getDateTimeInstance(
-//                SimpleDateFormat.SHORT, SimpleDateFormat.SHORT, Locale.getDefault());
-//        String formattedDate = df.format(date);
-//
-//        Toast.makeText(this, "Due date: " + formattedDate, Toast.LENGTH_SHORT).show();
+    private void playAudio(Vocab item) {
+        String pathName = getPathForCurrentAudioFile(item);
+        if (pathName == null) return;
+        if (mPlayer != null) {
+            mPlayer.release();
+            mPlayer = null;
+        }
+        mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(pathName);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            Log.e(TAG, "prepare() failed");
+        }
+    }
+
+    private String getPathForCurrentAudioFile(Vocab item) {
+        String filename = item.getAudioFilename();
+        if (TextUtils.isEmpty(filename)) return null;
+
+        File externalDir = getExternalFilesDir(null);
+        if (externalDir == null) return null;
+
+        String dirPath = externalDir.getAbsolutePath();
+        return dirPath + File.separator +
+                item.getListId() + File.separator +
+                filename;
     }
 
     @Override

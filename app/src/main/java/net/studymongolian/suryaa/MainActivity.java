@@ -1,5 +1,6 @@
 package net.studymongolian.suryaa;
 
+import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,12 +14,14 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -124,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.mi_list:
                 intent = new Intent(this, ListsActivity.class);
+                intent.putExtra(ListsActivity.LIST_ID_KEY, mCurrentList.getListId());
                 startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
                 return true;
             case R.id.mi_add:
@@ -293,24 +297,29 @@ public class MainActivity extends AppCompatActivity {
     public void onResponseButtonClick(View view) {
         if (mLocked) return;
 
-        int response = getResponseValue(view.getId());
-
+        int response = getResponseValue(view);
 
         if (mCurrentVocabItem.isFirstViewToday()) {
             calculateSuperMemo2Algorithm(response);
             new UpdateVocabPracticeData().execute(mCurrentVocabItem);
             mCurrentVocabItem.setFirstViewToday(false);
-        } else {
+            showNextDueDate();
+        }
+
+        // keep practicing wrong answers until they get them right
+        if (response < MIN_QUALITY_FOR_CORRECT) {
             mTodaysQuestions.add(mCurrentVocabItem);
         }
-        showNextDueDate();
+
         prepareNextQuestion();
     }
 
     private void showNextDueDate() {
         long nextDueDate = mCurrentVocabItem.getNextDueDate();
         String dateString = DateFormat.format("MM/dd/yyyy", new Date(nextDueDate)).toString();
-        Toast.makeText(this, dateString, Toast.LENGTH_SHORT).show();
+        Toast toast = Toast.makeText(this, dateString, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
     }
 
     private void calculateSuperMemo2Algorithm(int quality) {
@@ -348,7 +357,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private int getResponseValue(int viewId) {
+    private int getResponseValue(View view) {
+        int viewId = view.getId();
         switch (viewId) {
             case R.id.response_button_0:
                 return 0;

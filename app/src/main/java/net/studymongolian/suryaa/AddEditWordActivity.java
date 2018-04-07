@@ -67,7 +67,6 @@ public class AddEditWordActivity extends AppCompatActivity {
     MongolEditText mongolEditText;
     EditText etDefinition;
     EditText etPronunciation;
-    MyInputMethodService imeContainer;
 
     private long mCurrentListId;
     private Vocab mEditingWord;
@@ -76,96 +75,95 @@ public class AddEditWordActivity extends AppCompatActivity {
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
     private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_word);
 
+        initToolbar();
+        initViews();
+        initKeyboard();
+        loadInfoFromIntent();
+        initTempFile();
+        requestAudioRecordingPermission();
+        setMongolFont();
+    }
+
+    private void initToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
+    }
 
-        Intent intent = getIntent();
-        long editingWordId = intent.getLongExtra(WORD_ID_KEY, ADDING_WOPD);
-        mCurrentListId = intent.getLongExtra(MainActivity.LIST_ID_KEY, 1);
-
-        ImageView mRecordButton = findViewById(R.id.ivRecordButton);
+    private void initViews() {
+        mRecordButton = findViewById(R.id.ivRecordButton);
         mRecordButton.setOnTouchListener(mRecordListener);
-        ImageView mPlayButton = findViewById(R.id.ivPlayButton);
+        mPlayButton = findViewById(R.id.ivPlayButton);
         mPlayButton.setOnClickListener(mPlayButtonClickListener);
-        mTempAudioFilePathName = new File(
-                getExternalCacheDir().getAbsolutePath() + "/"
-                        + FileUtils.TEMP_AUDIO_FILE_NAME);
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+    }
 
+    private void initKeyboard() {
         mongolEditText = findViewById(R.id.metMongolWord);
         etDefinition = findViewById(R.id.etDefinition);
         etPronunciation = findViewById(R.id.etPronunciation);
-        imeContainer = findViewById(R.id.keyboard_container);
+        MyInputMethodService imeContainer = findViewById(R.id.keyboard_container);
 
         MyMimm mimm = new MyMimm();
         mimm.addEditor(etDefinition, true);
         mimm.addEditor(etPronunciation, false);
         mimm.addEditor(mongolEditText, false);
         mimm.setIme(imeContainer);
-        //mimm.setAllowSystemSoftInput(MongolInputMethodManager.SYSTEM_EDITOR_ONLY);
+    }
 
-        //mongolEditText.setOnFocusChangeListener(mongolFocusChangeListener);
-        //etPronunciation.setOnFocusChangeListener(pronunciationFocusChangeListener);
+    private void initTempFile() {
+        if (getExternalCacheDir() == null) return;
+        mTempAudioFilePathName = new File(
+                getExternalCacheDir().getAbsolutePath() + "/"
+                        + FileUtils.TEMP_AUDIO_FILE_NAME);
         deleteTempFile();
+    }
 
-        // set the MongolFont
+    private void loadInfoFromIntent() {
+        Intent intent = getIntent();
+        mCurrentListId = intent.getLongExtra(MainActivity.LIST_ID_KEY, 1);
+        long editingWordId = intent.getLongExtra(WORD_ID_KEY, ADDING_WOPD);
+        if (editingWordId != ADDING_WOPD) {
+            new LoadEditingWord().execute(editingWordId);
+        }
+    }
+
+    private void setPlayButtonVisibility() {
+        if (audioFileExists()) {
+            mPlayButton.setVisibility(View.VISIBLE);
+        } else {
+            mPlayButton.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private boolean audioFileExists() {
+        if (mTempAudioFilePathName.exists()) return true;
+        String audioPath = getAudioPathName(mCurrentListId, mEditingWord.getAudioFilename());
+        if (audioPath == null) return false;
+        if (!audioPath.endsWith(FileUtils.AUDIO_FILE_EXTENSION)) return false;
+        File audioFile = new File(audioPath);
+        return audioFile.exists();
+    }
+
+    private void requestAudioRecordingPermission() {
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+    }
+
+    private void setMongolFont() {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String fontStyle = sharedPref.getString(SettingsActivity.KEY_PREF_FONT, SettingsActivity.KEY_PREF_FONT_DEFAULT);
         if (!fontStyle.equals(SettingsActivity.KEY_PREF_FONT_DEFAULT)) {
             mongolEditText.setTypeface(MongolFont.get(SettingsActivity.QIMED, getApplicationContext()));
         }
-
-        // edit mode
-        if (editingWordId >= 0) {
-            getSupportActionBar().setTitle("Edit word");
-            new LoadEditingWord().execute(editingWordId);
-        }
     }
-
-    private View.OnFocusChangeListener mongolFocusChangeListener = new View.OnFocusChangeListener() {
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            if (hasFocus) {
-                //hideSystemKeyboard(v);
-                //showMongolAeiouKeyboard();
-            }
-        }
-    };
-
-    private void hideSystemKeyboard(View v) {
-        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-        if (imm != null)
-            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-    }
-
-    private void showMongolAeiouKeyboard() {
-        Keyboard aeiou = (Keyboard) imeContainer.getChildAt(0);
-        imeContainer.onRequestNewKeyboard(aeiou.getDisplayName());
-    }
-
-    private void showIpaKeyboard() {
-        Keyboard aeiou = (Keyboard) imeContainer.getChildAt(0);
-        imeContainer.onRequestNewKeyboard(aeiou.getDisplayName());
-    }
-
-    private View.OnFocusChangeListener pronunciationFocusChangeListener = new View.OnFocusChangeListener() {
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            if (hasFocus) {
-                hideSystemKeyboard(v);
-                showIpaKeyboard();
-            }
-        }
-    };
 
     private View.OnTouchListener mRecordListener = new View.OnTouchListener() {
         @Override
@@ -173,10 +171,12 @@ public class AddEditWordActivity extends AppCompatActivity {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     startRecording(mTempAudioFilePathName);
+                    v.setBackgroundResource(R.drawable.btn_record_default_pressed);
                     break;
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
                     stopRecording();
+                    v.setBackgroundResource(0);
                     break;
             }
             return true;
@@ -191,6 +191,8 @@ public class AddEditWordActivity extends AppCompatActivity {
                 mPlayer = null;
             }
             mPlayer = new MediaPlayer();
+            setPlayingImage();
+            changeImageBackWhenFinishedPlaying();
             try {
                 String dataSource = mTempAudioFilePathName.getAbsolutePath();
                 if (!mTempAudioFilePathName.exists() && mEditingWord != null) {
@@ -202,6 +204,19 @@ public class AddEditWordActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.e(LOG_TAG, "prepare() failed");
             }
+        }
+
+        private void setPlayingImage() {
+            mPlayButton.setImageResource(R.drawable.play_button_playing);
+        }
+
+        private void changeImageBackWhenFinishedPlaying() {
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mPlayButton.setImageResource(R.drawable.play_button);
+                }
+            });
         }
     };
 
@@ -337,18 +352,6 @@ public class AddEditWordActivity extends AppCompatActivity {
         }
     }
 
-    // TODO replace the temporary ipa buttons with an ipa keyboard
-    public void onIpaButtonClick(View view) {
-        Button button = (Button) view;
-        CharSequence ipa = button.getText();
-        // insert at cursor position
-        int start = Math.max(etPronunciation.getSelectionStart(), 0);
-        int end = Math.max(etPronunciation.getSelectionEnd(), 0);
-        etPronunciation.getText().replace(Math.min(start, end), Math.max(start, end),
-                ipa, 0, ipa.length());
-    }
-
-
     private void startRecording(File file) {
         if (mRecorder != null) {
             mRecorder.release();
@@ -391,6 +394,7 @@ public class AddEditWordActivity extends AppCompatActivity {
         }
         if (getSupportActionBar() == null) return;
         getSupportActionBar().setBackgroundDrawable(getThemePrimaryColor());
+        setPlayButtonVisibility();
     }
 
     private ColorDrawable getThemePrimaryColor() {
@@ -407,18 +411,18 @@ public class AddEditWordActivity extends AppCompatActivity {
     }
 
 
-    private boolean deleteAudioFile(Vocab vocab) {
+    private void deleteAudioFile(Vocab vocab) {
         if (TextUtils.isEmpty(vocab.getAudioFilename()))
-            return false;
+            return;
         String filePathName = getAudioPathName(vocab.getListId(), vocab.getAudioFilename());
-        if (filePathName == null) return false;
+        if (filePathName == null) return;
         try {
             File file = new File(filePathName);
-            return file.delete();
+            file.delete();
         } catch (SecurityException e) {
             Log.e("deleteAudioFile: ", e.getMessage());
         }
-        return false;
+        return;
     }
 
     private void deleteTempFile() {
@@ -549,6 +553,10 @@ public class AddEditWordActivity extends AppCompatActivity {
             etDefinition.setText(vocabItem.getDefinition());
             etPronunciation.setText(vocabItem.getPronunciation());
             mEditingWord = vocabItem;
+            setPlayButtonVisibility();
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(R.string.add_edit_word_activity_edit_title);
+            }
         }
 
     }

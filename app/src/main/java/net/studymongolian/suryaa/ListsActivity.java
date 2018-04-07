@@ -43,6 +43,8 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
     ActionMode mActionMode;
     public static final int REQUEST_WRITE_STORAGE = 112;
     private final String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private long mCurrentList;
+    private boolean mCurrentListWasDeleted = false;
 
     private ListsRvAdapter adapter;
 
@@ -57,6 +59,8 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
+
+        mCurrentList = getIntent().getLongExtra(LIST_ID_KEY, -1);
 
         new GetAllLists(this).execute();
 
@@ -78,12 +82,21 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 importFile();
                 return true;
             case android.R.id.home:
-
-                finish();
+                if (mCurrentListWasDeleted && adapter.getItemCount() > 0) {
+                    chooseNewList();
+                } else {
+                    setResult(RESULT_OK);
+                    finish();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void chooseNewList() {
+        long listId = adapter.getItem(0).getListId();
+        new SelectList(this).execute(listId);
     }
 
     @Override
@@ -369,7 +382,7 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
 
     }
 
-    private static class DeleteList extends AsyncTask<VocabList, Void, Void> {
+    private static class DeleteList extends AsyncTask<VocabList, Void, Long> {
 
         private WeakReference<ListsActivity> activityReference;
 
@@ -378,9 +391,10 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
         }
 
         @Override
-        protected Void doInBackground(VocabList... params) {
+        protected Long doInBackground(VocabList... params) {
 
             VocabList list = params[0];
+            long listId = list.getListId();
 
             try {
                 DatabaseManager dbAdapter = new DatabaseManager(activityReference.get());
@@ -394,14 +408,17 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 Log.i("app", e.toString());
             }
 
-            return null;
+            return listId;
 
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(Long deletedListId) {
             ListsActivity activity = activityReference.get();
             if (activity == null) return;
+            if (activity.mCurrentList == deletedListId) {
+                activity.mCurrentListWasDeleted = true;
+            }
             new GetAllLists(activity).execute();
         }
 

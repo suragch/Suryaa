@@ -37,7 +37,7 @@
     </style>
 
     <style name="KeyboardStyle" parent="AppTheme">
-        <item name="keyColor">@color/colorPrimary</item>
+        <item name="keyColor">@color/color_3</item>
         <item name="keyPressedColor">@color/colorAccent</item>
         <item name="primaryTextColor">@color/textColorPrimary</item>
         <item name="secondaryTextColor">@color/textColorPrimary</item>

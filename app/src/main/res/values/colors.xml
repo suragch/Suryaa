@@ -5,10 +5,6 @@
     <color name="colorPrimaryDark">#00701a</color>
     <color name="colorAccent">#ff8a80</color>
     <color name="textColorPrimary">#000000</color>
-    <!---->
-    <!--<color name="colorPrimary">#3F51B5</color>-->
-    <!--<color name="colorPrimaryDark">#303F9F</color>-->
-    <!--<color name="colorAccent">#FF4081</color>-->
 
     <color name="colorPrimaryNight">#212121</color>
     <color name="colorPrimaryDarkNight">#000000</color>
@@ -20,6 +16,8 @@
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="transparent_grey">#88888888</color>
+
 
     <color name="color_0">#ff2c2c</color>
     <color name="color_1">#ff6a6b</color>
@@ -27,6 +25,8 @@
     <color name="color_3">#c0e8b7</color>
     <color name="color_4">#6eca58</color>
     <color name="color_5">#2cb40d</color>
+
+    <color name="rippleColorHighlight">@color/colorAccent</color>
 
 
 </resources>

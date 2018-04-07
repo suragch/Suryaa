@@ -37,7 +37,8 @@ public class DatabaseManager {
                 VocabEntry.ID,
                 VocabEntry.MONGOL,
                 VocabEntry.DEFINITION,
-                VocabEntry.PRONUNCIATION
+                VocabEntry.PRONUNCIATION,
+                VocabEntry.AUDIO_FILENAME
         };
         String selection = VocabEntry.LIST_ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(listId)};
@@ -47,6 +48,7 @@ public class DatabaseManager {
         int indexMongol = cursor.getColumnIndex(VocabEntry.MONGOL);
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
+        int indexAudioFilename = cursor.getColumnIndex(VocabEntry.AUDIO_FILENAME);
 
         while (cursor.moveToNext()) {
             Vocab vocabItem = new Vocab(null);
@@ -55,6 +57,7 @@ public class DatabaseManager {
             vocabItem.setMongol(cursor.getString(indexMongol));
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
+            vocabItem.setAudioFilename(cursor.getString(indexAudioFilename));
             vocabList.add(vocabItem);
         }
 
