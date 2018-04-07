@@ -50,7 +50,9 @@ public class AllWordsRvAdapter extends RecyclerView.Adapter<AllWordsRvAdapter.Vi
     }
 
     // stores and recycles views as they are scrolled off screen
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener, View.OnLongClickListener {
+
         MongolTextView mtvMongol;
         MongolTextView mtvDefinition;
         MongolTextView mtvPronunciation;
@@ -61,11 +63,20 @@ public class AllWordsRvAdapter extends RecyclerView.Adapter<AllWordsRvAdapter.Vi
             mtvDefinition = itemView.findViewById(R.id.mtv_all_words_definition);
             mtvPronunciation = itemView.findViewById(R.id.mtv_all_words_pronunciation);
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
             if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            if (mClickListener != null) {
+                return mClickListener.onItemLongClick(view, getAdapterPosition());
+            }
+            return false;
         }
     }
 
@@ -82,5 +93,6 @@ public class AllWordsRvAdapter extends RecyclerView.Adapter<AllWordsRvAdapter.Vi
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
         void onItemClick(View view, int position);
+        boolean onItemLongClick(View view, int position);
     }
 }

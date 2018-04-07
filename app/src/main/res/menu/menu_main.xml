@@ -14,14 +14,19 @@
         android:title="Add">
     </item>
     <item
+        android:id="@+id/mi_edit"
+        app:showAsAction="ifRoom"
+        android:title="Edit">
+    </item>
+    <item
+        android:id="@+id/mi_move"
+        app:showAsAction="never"
+        android:title="Move">
+    </item>
+    <item
         android:id="@+id/mi_delete"
         app:showAsAction="never"
         android:title="Delete">
-    </item>
-    <item
-        android:id="@+id/mi_edit"
-        app:showAsAction="never"
-        android:title="Edit">
     </item>
 
     <item

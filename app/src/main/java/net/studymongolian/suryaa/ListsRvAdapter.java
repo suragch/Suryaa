@@ -39,7 +39,9 @@ class ListsRvAdapter extends RecyclerView.Adapter<ListsRvAdapter.ViewHolder> {
         return mLists.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener, View.OnLongClickListener {
+
         TextView tvListName;
 
         ViewHolder(View itemView) {

@@ -345,6 +345,19 @@ public class DatabaseManager {
         db.close();
     }
 
+    public void updateVocabItemList(long vocabId, long newListId) {
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(VocabEntry.LIST_ID, newListId);
+
+        String selection = VocabEntry.ID + " LIKE ?";
+        String[] selectionArgs = {String.valueOf(vocabId)};
+
+        SQLiteDatabase db = mHelper.getWritableDatabase();
+        db.update(VocabEntry.VOCAB_TABLE, contentValues, selection, selectionArgs);
+        db.close();
+    }
+
     public void deleteVocabItem(long rowId) {
         SQLiteDatabase db = mHelper.getWritableDatabase();
         String whereClause = VocabEntry.ID + " =?";

@@ -124,13 +124,10 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
 
     @Override
     public boolean onItemLongClick(View view, int position) {
-
         // show context menu
-        if (mActionMode != null) {
-            return false;
-        }
-
+        if (mActionMode != null) return false;
         mActionMode = startSupportActionMode(mActionModeCallback);
+        if (mActionMode == null) return false;
         mActionMode.setTag(position);
         view.setSelected(true);
         return true;
@@ -143,7 +140,7 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             // Inflate a menu resource providing context menu items
             MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.context_menu, menu);
+            inflater.inflate(R.menu.lists_context_menu, menu);
             return true;
         }
 

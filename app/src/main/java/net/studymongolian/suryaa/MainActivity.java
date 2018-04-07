@@ -32,8 +32,10 @@ import net.studymongolian.suryaa.database.DatabaseManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int LIST_ACTIVITY_REQUEST_CODE = 0;
     private static final int ADD_WORD_ACTIVITY_REQUEST_CODE = 1;
     private static final int SETTINGS_ACTIVITY_REQUEST_CODE = 2;
+    private static final int ALL_WORDS_ACTIVITY_REQUEST_CODE = 3;
     private static final String TAG = "MainActivity";
 
     private TextView mNumberOfWordsView;
@@ -108,14 +111,17 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        MenuItem itemDelete = menu.findItem(R.id.mi_delete);
         MenuItem itemEdit = menu.findItem(R.id.mi_edit);
+        MenuItem itemMove = menu.findItem(R.id.mi_move);
+        MenuItem itemDelete = menu.findItem(R.id.mi_delete);
         if (mCurrentVocabItem == null) {
-            itemDelete.setVisible(false);
             itemEdit.setVisible(false);
+            itemMove.setVisible(false);
+            itemDelete.setVisible(false);
         } else {
-            itemDelete.setVisible(true);
             itemEdit.setVisible(true);
+            itemMove.setVisible(true);
+            itemDelete.setVisible(true);
         }
 
         return true;
@@ -135,19 +141,22 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(LIST_ID_KEY, mCurrentList.getListId());
                 startActivityForResult(intent, ADD_WORD_ACTIVITY_REQUEST_CODE);
                 return true;
-            case R.id.mi_delete:
-                deleteWord();
-                return true;
             case R.id.mi_edit:
                 intent = new Intent(this, AddEditWordActivity.class);
                 intent.putExtra(LIST_ID_KEY, mCurrentList.getListId());
                 intent.putExtra(AddEditWordActivity.WORD_ID_KEY, mCurrentVocabItem.getId());
                 startActivityForResult(intent, ADD_WORD_ACTIVITY_REQUEST_CODE);
                 return true;
+            case R.id.mi_move:
+                moveWord();
+                return true;
+            case R.id.mi_delete:
+                deleteWord();
+                return true;
             case R.id.mi_all_words:
                 intent = new Intent(this, AllWordsActivity.class);
                 intent.putExtra(LIST_ID_KEY, mCurrentList.getListId());
-                startActivity(intent);
+                startActivityForResult(intent, ALL_WORDS_ACTIVITY_REQUEST_CODE);
                 return true;
             case R.id.mi_settings:
                 intent = new Intent(this, SettingsActivity.class);
@@ -165,6 +174,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void moveWord() {
+        new ShowLists().execute(mCurrentVocabItem);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -172,38 +185,32 @@ public class MainActivity extends AppCompatActivity {
 
         switch (requestCode) {
             case LIST_ACTIVITY_REQUEST_CODE:
-
-                // get String data from Intent
-                //long listId = -1;
                 if (data != null) {
                     long listId = data.getLongExtra(ListsActivity.LIST_ID_KEY, -1);
                     new GetTodaysVocab().execute(listId);
                 }
-
                 break;
             case ADD_WORD_ACTIVITY_REQUEST_CODE:
-                //if (resultCode == RESULT_OK) {
-
                 boolean wordsAdded = data.getBooleanExtra(AddEditWordActivity.WORDS_ADDED_KEY, false);
                 if (wordsAdded) {
                     new GetTodaysVocab().execute(mCurrentList.getListId());
                     return;
                 }
-
                 boolean wordEdited = data.getBooleanExtra(AddEditWordActivity.EDIT_MODE_KEY, false);
                 if (wordEdited) {
                     new RefreshVocabItem().execute(mCurrentVocabItem.getId());
                 }
-                //}
                 break;
             case SETTINGS_ACTIVITY_REQUEST_CODE:
-                //if (resultCode == RESULT_OK) {
                 recreate();
-                //}
+                break;
+            case ALL_WORDS_ACTIVITY_REQUEST_CODE:
+                boolean changesMade = data.getBooleanExtra(AllWordsActivity.CHANGES_MADE_KEY, false);
+                if (changesMade) {
+                    new GetTodaysVocab().execute(mCurrentList.getListId());
+                }
                 break;
         }
-
-
     }
 
     @Override
@@ -333,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
         int consecutiveCorrect = mCurrentVocabItem.getConsecutiveCorrect();
         //int interval = mCurrentVocabItem.getInterval();
 
-        easiness = (float) Math.max(1.3, easiness - 0.8 + 0.28*quality - 0.02*quality*quality);
+        easiness = (float) Math.max(1.3, easiness - 0.8 + 0.28 * quality - 0.02 * quality * quality);
 
         // consecutive correct
         boolean answerIsCorrect = quality >= MIN_QUALITY_FOR_CORRECT;
@@ -422,9 +429,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
             mLocked = true;
-
         }
 
         @Override
@@ -581,6 +586,102 @@ public class MainActivity extends AppCompatActivity {
                             + item.getAudioFilename());
             if (audioFile.exists() && audioFile.delete())
                 Log.i(TAG, "File deleted: " + item.getAudioFilename());
+        }
+
+        @Override
+        protected void onPostExecute(Void results) {
+            prepareNextQuestion();
+        }
+
+    }
+
+    // TODO this is not dry, repeated in AllWordsActivity
+    private class ShowLists extends AsyncTask<Vocab, Void, List<VocabList>> {
+
+        Vocab currentItem;
+
+        @Override
+        protected List<VocabList> doInBackground(Vocab... params) {
+
+            currentItem = params[0];
+            List<VocabList> results = null;
+
+            try {
+                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
+                results = dbAdapter.getAllLists();
+            } catch (Exception e) {
+                Log.i("app", e.toString());
+            }
+
+            return results;
+        }
+
+        @Override
+        protected void onPostExecute(List<VocabList> results) {
+            List<VocabList> otherLists = filterOutCurrentList(currentItem.getListId(), results);
+            showListDialog(currentItem.getId(), otherLists);
+        }
+    }
+
+    private List<VocabList> filterOutCurrentList(long currentListId, List<VocabList> lists) {
+        //long currentListId = adapter.getItem(mLongClickedItemIndex).getListId();
+        List<VocabList> filtered = new ArrayList<>();
+        for (VocabList list : lists) {
+            if (list.getListId() != currentListId)
+                filtered.add(list);
+        }
+        return filtered;
+    }
+
+    private void showListDialog(final long currentWordId, final List<VocabList> otherLists) {
+        if (otherLists == null || otherLists.size() ==0) {
+            Toast.makeText(this, "There are no other lists", Toast.LENGTH_SHORT).show();
+            // TODO remove the MOVE item from the menu or allow a new list to be created here.
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Move to another list");
+
+        String[] items = getListNames(otherLists);
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //long wordId = adapter.getItem(mLongClickedItemIndex).getId();
+                long newListId = otherLists.get(which).getListId();
+                new MoveVocabItemToNewList().execute(currentWordId, newListId);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private String[] getListNames(List<VocabList> otherLists) {
+        String[] names = new String[otherLists.size()];
+        for (int i = 0; i < otherLists.size(); i++) {
+            names[i] = otherLists.get(i).getName();
+        }
+        return names;
+    }
+
+    private class MoveVocabItemToNewList extends AsyncTask<Long, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Long... params) {
+
+            long vocabId = params[0];
+            long listId = params[1];
+
+            try {
+
+                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
+                dbAdapter.updateVocabItemList(vocabId, listId);
+            } catch (Exception e) {
+                Log.i("app", e.toString());
+            }
+
+            return null;
         }
 
         @Override
