@@ -82,16 +82,32 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 importFile();
                 return true;
             case android.R.id.home:
-                if (mCurrentListWasDeleted && adapter.getItemCount() > 0) {
-                    chooseNewList();
-                } else {
-                    setResult(RESULT_OK);
-                    finish();
-                }
+                onUserFinishing();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        onUserFinishing();
+    }
+
+    private void onUserFinishing() {
+
+        if (mCurrentListWasDeleted && adapter.getItemCount() > 0) {
+            chooseNewList();
+            return;
+        }
+
+        Intent intent = new Intent();
+
+        if (mCurrentListWasDeleted && adapter.getItemCount() == 0) {
+            intent.putExtra(LIST_ID_KEY, -1);
+        }
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     private void chooseNewList() {
@@ -558,6 +574,7 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 newListId = dbAdapter.createNewList(listname);
                 allVocabInList = FileUtils.importFile(csvFilePathName, newListId);
                 // copy audio files
+
                 copyAudioFilesRemovingNullReferences(activityContext, csvFilePathName, allVocabInList);
                 dbAdapter.bulkInsert(allVocabInList);
                 result = true;

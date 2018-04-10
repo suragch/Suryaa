@@ -190,7 +190,11 @@ public class MainActivity extends AppCompatActivity {
             case LIST_ACTIVITY_REQUEST_CODE:
                 if (data != null) {
                     long listId = data.getLongExtra(ListsActivity.LIST_ID_KEY, -1);
-                    new GetTodaysVocab().execute(listId);
+                    if (listId >= 0) {
+                        new GetTodaysVocab().execute(listId);
+                    } else {
+                        handleQuestionsFinished();
+                    }
                 }
                 break;
             case ADD_WORD_ACTIVITY_REQUEST_CODE:

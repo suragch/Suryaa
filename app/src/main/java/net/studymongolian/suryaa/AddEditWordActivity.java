@@ -242,15 +242,24 @@ public class AddEditWordActivity extends AppCompatActivity {
                 saveWord();
                 return true;
             case android.R.id.home:
-                deleteTempFile();
-                Intent intent = new Intent();
-                intent.putExtra(WORDS_ADDED_KEY, wordsWereAdded);
-                setResult(RESULT_OK, intent);
-                finish();
+                handleUserFinishing();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleUserFinishing();
+    }
+
+    private void handleUserFinishing () {
+        deleteTempFile();
+        Intent intent = new Intent();
+        intent.putExtra(WORDS_ADDED_KEY, wordsWereAdded);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     private void saveWord() {
