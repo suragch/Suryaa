@@ -3,8 +3,6 @@ package net.studymongolian.suryaa;
 
 public class VocabList {
 
-
-
     private long listId;
     private String name;
     private long dateAccessed;

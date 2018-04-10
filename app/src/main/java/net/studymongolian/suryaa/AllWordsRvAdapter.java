@@ -3,18 +3,20 @@ package net.studymongolian.suryaa;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import net.studymongolian.mongollibrary.MongolFont;
 import net.studymongolian.mongollibrary.MongolTextView;
 
-import java.util.Collections;
 import java.util.List;
 
 public class AllWordsRvAdapter extends RecyclerView.Adapter<AllWordsRvAdapter.ViewHolder> {
 
-    private List<Vocab> mVocabList = Collections.emptyList();
+    private static final String SPEAKER_WITH_THREE_SOUND_WAVES = "\uD83D\uDD0A";
+    private List<Vocab> mVocabList;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
@@ -38,6 +40,9 @@ public class AllWordsRvAdapter extends RecyclerView.Adapter<AllWordsRvAdapter.Vi
         String mongolWord = mVocabList.get(position).getMongol();
         String definition = mVocabList.get(position).getDefinition();
         String pronunciation = mVocabList.get(position).getPronunciation();
+        String fileName = mVocabList.get(position).getAudioFilename();
+        if (!TextUtils.isEmpty(fileName))
+            pronunciation = pronunciation + " " + SPEAKER_WITH_THREE_SOUND_WAVES;
         holder.mtvMongol.setText(mongolWord);
         holder.mtvDefinition.setText(definition);
         holder.mtvPronunciation.setText(pronunciation);
@@ -62,6 +67,7 @@ public class AllWordsRvAdapter extends RecyclerView.Adapter<AllWordsRvAdapter.Vi
             mtvMongol = itemView.findViewById(R.id.mtv_all_words_mongol);
             mtvDefinition = itemView.findViewById(R.id.mtv_all_words_definition);
             mtvPronunciation = itemView.findViewById(R.id.mtv_all_words_pronunciation);
+            mtvPronunciation.setTypeface(MongolFont.get(MainActivity.IPA_FONT, itemView.getContext()));
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
         }

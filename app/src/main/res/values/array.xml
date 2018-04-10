@@ -6,11 +6,25 @@
         <item>Handwriting</item>
     </string-array>
 
+    <string-array name="study_mode_entries">
+        <item>Mongol</item>
+        <item>Definition</item>
+        <item>Pronunciation</item>
+    </string-array>
+
     <!-- These values are for internal use. Don't translate. -->
     <string name="pref_font_type_default">printing</string>
     <string-array name="font_type_values">
         <item>printing</item>
         <item>handwriting</item>
+    </string-array>
+
+    <!-- These values are for internal use. Don't translate. Must be the same as enum values. -->
+    <string name="pref_study_mode_default">M</string>
+    <string-array name="study_mode_values">
+        <item>M</item>
+        <item>D</item>
+        <item>P</item>
     </string-array>
 
     <string-array name="default_data_mongol">

@@ -42,8 +42,9 @@ public class DatabaseManager {
         };
         String selection = VocabEntry.LIST_ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(listId)};
+        String orderMostRecentlyAddedFirst = VocabEntry.ID + " DESC";
         Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs,
-                null, null, null, null);
+                null, null, orderMostRecentlyAddedFirst, null);
         int indexId = cursor.getColumnIndex(VocabEntry.ID);
         int indexMongol = cursor.getColumnIndex(VocabEntry.MONGOL);
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
@@ -71,7 +72,6 @@ public class DatabaseManager {
 
         Queue<Vocab> vocabList = new LinkedList<>();
 
-
         // midnight tonight
         Calendar date = new GregorianCalendar();
         date.set(Calendar.HOUR_OF_DAY, 0);
@@ -81,10 +81,8 @@ public class DatabaseManager {
         date.add(Calendar.DAY_OF_MONTH, 1);
         long midnightTonight = date.getTimeInMillis();
 
-
         String nextDueDateColumn = getNextDueDateColumnName(studyMode);
         String consecutiveCorrectColumn = getConsecutiveCorrectColumnName(studyMode);
-        //String intervalColumn = getIntervalColumnName(studyMode);
         String eFactorColumn = getEasinessFactorColumnName(studyMode);
         SQLiteDatabase db = mHelper.getReadableDatabase();
         String[] columns = {
@@ -130,7 +128,6 @@ public class DatabaseManager {
         db.close();
 
         return vocabList;
-
     }
 
     private String getNextDueDateColumnName(StudyMode studyMode) {
@@ -154,17 +151,6 @@ public class DatabaseManager {
                 return VocabEntry.MONGOL_CONSECUTIVE_CORRECT;
         }
     }
-
-//    private String getIntervalColumnName(StudyMode studyMode) {
-//        switch (studyMode) {
-//            case DEFINITION:
-//                return VocabEntry.DEFINITION_INTERVAL;
-//            case PRONUNCIATION:
-//                return VocabEntry.PRONUNCIATION_INTERVAL;
-//            default:
-//                return VocabEntry.MONGOL_INTERVAL;
-//        }
-//    }
 
     private String getEasinessFactorColumnName(StudyMode studyMode) {
         switch (studyMode) {
@@ -271,17 +257,14 @@ public class DatabaseManager {
 
                 contentValues.put(VocabEntry.MONGOL_NEXT_DUE_DATE, item.getNextDueDate());
                 contentValues.put(VocabEntry.MONGOL_CONSECUTIVE_CORRECT, item.getConsecutiveCorrect());
-                //contentValues.put(VocabEntry.MONGOL_INTERVAL, item.getInterval());
                 contentValues.put(VocabEntry.MONGOL_EF, item.getEasinessFactor());
 
                 contentValues.put(VocabEntry.DEFINITION_NEXT_DUE_DATE, item.getNextDueDate());
                 contentValues.put(VocabEntry.DEFINITION_CONSECUTIVE_CORRECT, item.getConsecutiveCorrect());
-                //contentValues.put(VocabEntry.DEFINITION_INTERVAL, item.getInterval());
                 contentValues.put(VocabEntry.DEFINITION_EF, item.getEasinessFactor());
 
                 contentValues.put(VocabEntry.PRONUNCIATION_NEXT_DUE_DATE, item.getNextDueDate());
                 contentValues.put(VocabEntry.PRONUNCIATION_CONSECUTIVE_CORRECT, item.getConsecutiveCorrect());
-                //contentValues.put(VocabEntry.PRONUNCIATION_INTERVAL, item.getInterval());
                 contentValues.put(VocabEntry.PRONUNCIATION_EF, item.getEasinessFactor());
 
                 db.insert(VocabEntry.VOCAB_TABLE, null, contentValues);

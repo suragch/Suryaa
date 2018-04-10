@@ -8,12 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.Collections;
 import java.util.List;
 
 class ListsRvAdapter extends RecyclerView.Adapter<ListsRvAdapter.ViewHolder> {
 
-    private List<VocabList> mLists = Collections.emptyList();
+    private List<VocabList> mLists;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 

@@ -12,6 +12,14 @@
         android:entries="@array/font_type_entries"
         android:entryValues="@array/font_type_values"
         android:defaultValue="@string/pref_font_type_default" />
+    <ListPreference
+        android:key="pref_study_mode"
+        android:title="Study mode"
+        android:summary="%s"
+        android:dialogTitle="What to study"
+        android:entries="@array/study_mode_entries"
+        android:entryValues="@array/study_mode_values"
+        android:defaultValue="@string/pref_study_mode_default" />
     <Preference
         android:key="pref_help"
         android:title="Help">

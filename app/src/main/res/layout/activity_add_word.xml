@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -87,6 +88,7 @@
                 android:padding="20dp"
                 android:visibility="invisible"
                 android:layout_toRightOf="@id/ivRecordButton"
+                android:layout_toEndOf="@id/ivRecordButton"
                 android:contentDescription="@string/play_audio_content_description" />
 
         </RelativeLayout>
@@ -105,12 +107,14 @@
         <net.studymongolian.mongollibrary.KeyboardAeiou
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:displayName="Mongol"
             style="@style/KeyboardStyle"
             />
 
         <net.studymongolian.suryaa.IpaKeyboard
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:fontAssetFile="fonts/FreeSans.ttf"
             style="@style/KeyboardStyle"
             />
 

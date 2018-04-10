@@ -6,11 +6,7 @@ import android.util.AttributeSet;
 import android.view.inputmethod.EditorInfo;
 
 import net.studymongolian.mongollibrary.ImeContainer;
-import net.studymongolian.mongollibrary.KeyboardAeiou;
 
-// ImeContainer should probably be separated into a View and a local Input Method Service
-// This class is doing that partially for this application
-// TODO move all this functionality to mongol-library
 public class MyInputMethodService extends ImeContainer {
 
     public MyInputMethodService(Context context) {
@@ -25,21 +21,15 @@ public class MyInputMethodService extends ImeContainer {
         super(context, attrs, defStyle);
     }
 
+    @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         switch (attribute.inputType) {
             case InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PHONETIC:
-                this.onRequestNewKeyboard(getIpaKeyboardDisplayName());
+                this.requestNewKeyboard(1);
                 break;
             default:
-                this.onRequestNewKeyboard(getMongolKeyboardDisplayName());
+                this.requestNewKeyboard(0);
         }
     }
 
-    private String getIpaKeyboardDisplayName() {
-        return "ipa";
-    }
-
-    private String getMongolKeyboardDisplayName() {
-        return "ᠴᠠᠭᠠᠨ ᠲᠣᠯᠤᠭᠠᠢ";
-    }
 }

@@ -1,11 +1,9 @@
 package net.studymongolian.suryaa;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
@@ -25,20 +23,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import net.studymongolian.mongollibrary.ImeContainer;
-import net.studymongolian.mongollibrary.Keyboard;
-import net.studymongolian.mongollibrary.KeyboardAeiou;
 import net.studymongolian.mongollibrary.MongolEditText;
 import net.studymongolian.mongollibrary.MongolFont;
 import net.studymongolian.mongollibrary.MongolInputMethodManager;
 import net.studymongolian.suryaa.database.DatabaseManager;
-import net.studymongolian.suryaa.database.ListsEntry;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +46,7 @@ public class AddEditWordActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "AddEditWordActivity";
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
-    private static final int ADDING_WOPD = -1;
+    private static final int ADDING_WORD = -1;
     private static File mTempAudioFilePathName = null;
 
     ImageView mRecordButton;
@@ -110,9 +102,10 @@ public class AddEditWordActivity extends AppCompatActivity {
         mongolEditText = findViewById(R.id.metMongolWord);
         etDefinition = findViewById(R.id.etDefinition);
         etPronunciation = findViewById(R.id.etPronunciation);
+        etPronunciation.setTypeface(MongolFont.get(MainActivity.IPA_FONT, this));
         MyInputMethodService imeContainer = findViewById(R.id.keyboard_container);
 
-        MyMimm mimm = new MyMimm();
+        MongolInputMethodManager mimm = new MongolInputMethodManager();
         mimm.addEditor(etDefinition, true);
         mimm.addEditor(etPronunciation, false);
         mimm.addEditor(mongolEditText, false);
@@ -130,8 +123,8 @@ public class AddEditWordActivity extends AppCompatActivity {
     private void loadInfoFromIntent() {
         Intent intent = getIntent();
         mCurrentListId = intent.getLongExtra(MainActivity.LIST_ID_KEY, 1);
-        long editingWordId = intent.getLongExtra(WORD_ID_KEY, ADDING_WOPD);
-        if (editingWordId != ADDING_WOPD) {
+        long editingWordId = intent.getLongExtra(WORD_ID_KEY, ADDING_WORD);
+        if (editingWordId != ADDING_WORD) {
             new LoadEditingWord().execute(editingWordId);
         }
     }
@@ -247,8 +240,6 @@ public class AddEditWordActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.miSaveWord:
                 saveWord();
-
-
                 return true;
             case android.R.id.home:
                 deleteTempFile();
@@ -422,7 +413,6 @@ public class AddEditWordActivity extends AppCompatActivity {
         } catch (SecurityException e) {
             Log.e("deleteAudioFile: ", e.getMessage());
         }
-        return;
     }
 
     private void deleteTempFile() {
@@ -560,6 +550,4 @@ public class AddEditWordActivity extends AppCompatActivity {
         }
 
     }
-
-
 }

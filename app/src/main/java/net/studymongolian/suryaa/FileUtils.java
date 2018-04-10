@@ -102,15 +102,6 @@ class FileUtils {
                 + APP_PUBLIC_FOLDER_NAME;
     }
 
-    /* Checks if external storage is available for read and write */
-    private static boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
-    }
-
     static List<Vocab> importFile(String filePathName, long listId) throws Exception {
 
         List<Vocab> vocabs = new ArrayList<>();
@@ -245,43 +236,4 @@ class FileUtils {
             }
         }
     }
-
-//    static void copyFile(File sourceFilePathName, File destFileFilePathName) {
-//        Log.i(TAG, "copyFile: starting to copy " + sourceFilePathName + " to " + destFileFilePathName);
-//        InputStream in;
-//        OutputStream out;
-//        try {
-//
-//            //create output directory if it doesn't exist
-//            if (!destFileFilePathName.exists()) {
-//                destFileFilePathName.getParentFile().mkdirs();
-//            }
-//
-//
-//            in = new FileInputStream(sourceFilePathName);
-//            out = new FileOutputStream(destFileFilePathName);
-//
-//            byte[] buffer = new byte[1024];
-//            int read;
-//            while ((read = in.read(buffer)) != -1) {
-//                out.write(buffer, 0, read);
-//            }
-//            in.close();
-//            in = null;
-//
-//            // write the output file (You have now copied the file)
-//            out.flush();
-//            out.close();
-//            out = null;
-//            Log.i(TAG, "copyFile: copy seemed to finish OK");
-//
-//        } catch (FileNotFoundException fnfe1) {
-//            Log.i(TAG, "copyFile: FileNotFoundException");
-//            Log.e("tag", fnfe1.getMessage());
-//        } catch (Exception e) {
-//            Log.i(TAG, "copyFile: FileNotFoundException");
-//            Log.e("tag", e.getMessage());
-//        }
-//    }
-
 }

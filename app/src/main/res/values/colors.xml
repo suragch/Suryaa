@@ -19,12 +19,12 @@
     <color name="transparent_grey">#88888888</color>
 
 
-    <color name="color_0">#ff2c2c</color>
-    <color name="color_1">#ff6a6b</color>
-    <color name="color_2">#ffa7a7</color>
-    <color name="color_3">#c0e8b7</color>
-    <color name="color_4">#6eca58</color>
-    <color name="color_5">#2cb40d</color>
+    <color name="color_0">#ff6a6b</color>
+    <color name="color_1">#ffa7a7</color>
+    <color name="color_2">#ffd4d4</color>
+    <color name="color_3">#ddf3d8</color>
+    <color name="color_4">#c0e8b7</color>
+    <color name="color_5">#6eca58</color>
 
     <color name="rippleColorHighlight">@color/colorAccent</color>
 

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <style name="playButtonStyle" parent="AppTheme">
+        <item name="android:src">@drawable/ic_play_circle_filled_white_48dp</item>
+    </style>
+
     <style name="KeyboardStyle" parent="AppTheme">
         <item name="keyColor">@color/colorPrimary</item>
         <item name="keyPressedColor">@color/colorAccent</item>

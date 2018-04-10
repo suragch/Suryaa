@@ -310,7 +310,6 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
     }
 
     private List<VocabList> filterOutCurrentList(long currentListId, List<VocabList> lists) {
-        //long currentListId = adapter.getItem(mLongClickedItemIndex).getListId();
         List<VocabList> filtered = new ArrayList<>();
         for (VocabList list : lists) {
             if (list.getListId() != currentListId)
@@ -333,7 +332,6 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //long wordId = adapter.getItem(mLongClickedItemIndex).getId();
                 long newListId = otherLists.get(which).getListId();
                 new MoveVocabItemToNewList().execute(currentWordId, newListId);
             }

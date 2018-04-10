@@ -4,9 +4,7 @@ public class Vocab {
 
     static final int DEFAULT_NEXT_DUE_DATE = 0;
     static final int DEFAULT_CONSECUTIVE_CORRECT = 0;
-    static final int DEFAULT_INTERVAL_IN_DAYS = 0;
     static final float DEFAULT_EASINESS_FACTOR = 2.5f;
-    static final StudyMode DEFAULT_STUDY_MODE = StudyMode.MONGOL;
     static final int DEFAULT_QUALITY_ASSESSMENT = 0;
 
     private long id;
@@ -17,13 +15,10 @@ public class Vocab {
     private String audioFilename;
     private long nextDueDate;
     private int consecutiveCorrect;
-    //private int interval;
     private float easinessFactor;
     private StudyMode studyMode;
     private int qualityAssessment;
     private boolean isFirstViewToday;
-
-    private Vocab() {}
 
     public Vocab(StudyMode studyMode) {
         this.id = -1;
@@ -34,7 +29,6 @@ public class Vocab {
         this.audioFilename = "";
         this.nextDueDate = DEFAULT_NEXT_DUE_DATE;
         this.consecutiveCorrect = DEFAULT_CONSECUTIVE_CORRECT;
-        //this.interval = DEFAULT_INTERVAL_IN_DAYS;
         this.easinessFactor = DEFAULT_EASINESS_FACTOR;
         this.studyMode = studyMode;
         this.qualityAssessment = DEFAULT_QUALITY_ASSESSMENT;
@@ -105,14 +99,6 @@ public class Vocab {
         this.consecutiveCorrect = consecutiveCorrect;
     }
 
-//    public int getInterval() {
-//        return interval;
-//    }
-//
-//    public void setInterval(int interval) {
-//        this.interval = interval;
-//    }
-
     public float getEasinessFactor() {
         return easinessFactor;
     }
@@ -124,11 +110,6 @@ public class Vocab {
     public StudyMode getStudyMode() {
         return studyMode;
     }
-
-//    public void setStudyMode(StudyMode studyMode) {
-//        this.studyMode = studyMode;
-//    }
-
 
     public int getQualityAssessment() {
         return qualityAssessment;

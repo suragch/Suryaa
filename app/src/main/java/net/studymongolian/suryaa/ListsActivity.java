@@ -493,7 +493,10 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 allVocabInList = dbAdapter.getAllVocabInList(list.getListId());
 
                 // export db and audio
-                String pathName  = appContext.getExternalFilesDir(null).getAbsolutePath()
+                File externalDir = appContext.getExternalFilesDir(null);
+                if (externalDir == null)
+                    return false;
+                String pathName  = externalDir.getAbsolutePath()
                         + "/" + list.getListId();
                 File sourceFolder = new File(pathName);
                 result = FileUtils.exportList(appContext, allVocabInList, list.getName(), sourceFolder);
@@ -546,19 +549,15 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
                 listname = listname.replace("_", " ");
             }
 
-
             List<Vocab> allVocabInList;
 
             long newListId = -1;
 
             try {
-
-
                 DatabaseManager dbAdapter = new DatabaseManager(activityContext);
                 newListId = dbAdapter.createNewList(listname);
                 allVocabInList = FileUtils.importFile(csvFilePathName, newListId);
                 // copy audio files
-
                 copyAudioFilesRemovingNullReferences(activityContext, csvFilePathName, allVocabInList);
                 dbAdapter.bulkInsert(allVocabInList);
                 result = true;

@@ -1,6 +1,5 @@
 package net.studymongolian.suryaa;
 
-import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,8 +20,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,9 +43,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int SETTINGS_ACTIVITY_REQUEST_CODE = 2;
     private static final int ALL_WORDS_ACTIVITY_REQUEST_CODE = 3;
     private static final String TAG = "MainActivity";
+    static final String IPA_FONT = "fonts/FreeSans.ttf";
 
     private TextView mNumberOfWordsView;
-    private ScrollView mAnswerPanel;
     private TextView mAnswerButton;
     private FrameLayout mButtonPanel;
     private LinearLayout mAnswerButtonLayout;
@@ -61,8 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mPlayButton;
     private MediaPlayer mPlayer = null;
     private boolean mLocked = false; // don't allow operations during db background tasks
-    private StudyMode mStudyMode = StudyMode.MONGOL;
-    //private int ALREADY_VIEWED_TODAY = -1;
+    private StudyMode mStudyMode;
     private static final int MIN_QUALITY_FOR_CORRECT = 3;
     private static final int MILLISECONDS_IN_A_DAY = 86400000;
     private static final int DEFAULT_INTERVAL = 6;
@@ -80,13 +76,13 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         mNumberOfWordsView = findViewById(R.id.tv_number_of_words);
-        mAnswerPanel = findViewById(R.id.answer_panel);
         mAnswerButton = findViewById(R.id.answer_button);
         mButtonPanel = findViewById(R.id.button_panel);
         mAnswerButtonLayout = findViewById(R.id.answer_button_layout);
         mMongolView = findViewById(R.id.ml_mongol_vocab);
         mDefinitionView = findViewById(R.id.tv_definition);
         mPronunciationView = findViewById(R.id.tv_pronunciation);
+        mPronunciationView.setTypeface(MongolFont.get(IPA_FONT, this));
         mPlayButton = findViewById(R.id.ib_play_audio);
         mPlayButton.setOnClickListener(mPlayButtonClickListener);
 
@@ -97,10 +93,14 @@ public class MainActivity extends AppCompatActivity {
             mMongolView.setTypeface(MongolFont.get(SettingsActivity.QIMED, getApplicationContext()));
         }
 
+        // get study mode
+        String studyModeCode = sharedPref.getString(SettingsActivity.KEY_PREF_STUDY_MODE,
+                SettingsActivity.KEY_PREF_STUDY_MODE_CODE_DEFAULT);
+        mStudyMode = StudyMode.lookupByCode(studyModeCode);
+
         // get current list
         long currentListId = sharedPref.getLong(SettingsActivity.KEY_PREF_CURRENT_LIST, 1);
         // 1 is the default id (used on first run)
-        // load current vocab item
         new GetTodaysVocab().execute(currentListId);
 
     }
@@ -165,8 +165,11 @@ public class MainActivity extends AppCompatActivity {
                         SettingsActivity.KEY_PREF_NIGHT_MODE, false);
                 String currentFont = sharedPref.getString(
                         SettingsActivity.KEY_PREF_FONT, SettingsActivity.KEY_PREF_FONT_DEFAULT);
+                String currentStudyModeCode = sharedPref.getString(
+                        SettingsActivity.KEY_PREF_STUDY_MODE, SettingsActivity.KEY_PREF_STUDY_MODE_CODE_DEFAULT);
                 intent.putExtra(SettingsActivity.KEY_PREF_NIGHT_MODE, currentNightMode);
                 intent.putExtra(SettingsActivity.KEY_PREF_FONT, currentFont);
+                intent.putExtra(SettingsActivity.KEY_PREF_STUDY_MODE, currentStudyModeCode);
                 startActivityForResult(intent, SETTINGS_ACTIVITY_REQUEST_CODE);
                 return true;
             default:
@@ -296,9 +299,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onAnswerButtonClick(View view) {
-        mAnswerPanel.setVisibility(View.VISIBLE);
+        setAnswerVisibility();
         mAnswerButton.setVisibility(View.GONE);
         mAnswerButtonLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void setAnswerVisibility() {
+        mMongolView.setVisibility(View.VISIBLE);
+        mDefinitionView.setVisibility(View.VISIBLE);
+        mPronunciationView.setVisibility(View.VISIBLE);
+        if (!TextUtils.isEmpty(mCurrentVocabItem.getAudioFilename())) {
+            mPlayButton.setVisibility(View.VISIBLE);
+        }
     }
 
     public void onResponseButtonClick(View view) {
@@ -385,32 +397,85 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void prepareNextQuestion() {
-        mAnswerPanel.setVisibility(View.INVISIBLE);
-        mAnswerButton.setVisibility(View.VISIBLE);
-        mAnswerButtonLayout.setVisibility(View.GONE);
-        mCurrentVocabItem = mTodaysQuestions.poll();
+        mCurrentVocabItem = getNextQuestion();
+        if (mCurrentVocabItem == null) {
+            handleQuestionsFinished();
+            return;
+        }
+        setQuestionVisibility(mCurrentVocabItem);
         setQuestionText(mCurrentVocabItem);
     }
 
-    private void setQuestionText(Vocab item) {
-        if (item == null) {
-            mMongolView.setVisibility(View.INVISIBLE);
-            mButtonPanel.setVisibility(View.INVISIBLE);
-            mNumberOfWordsView.setText(String.valueOf(0));
-            invalidateOptionsMenu();
-            return;
+    private Vocab getNextQuestion() {
+        Vocab nextQuestion = mTodaysQuestions.poll();
+        if (nextQuestion == null) return null;
+        switch (mStudyMode) {
+            case MONGOL:
+                if (TextUtils.isEmpty(nextQuestion.getMongol()))
+                    return getNextQuestion();
+                break;
+            case DEFINITION:
+                if (TextUtils.isEmpty(nextQuestion.getDefinition()))
+                    return getNextQuestion();
+                break;
+            case PRONUNCIATION:
+                if (TextUtils.isEmpty(nextQuestion.getPronunciation())
+                        && TextUtils.isEmpty(nextQuestion.getAudioFilename()))
+                    return getNextQuestion();
+                break;
         }
-        mMongolView.setVisibility(View.VISIBLE);
+        return nextQuestion;
+    }
+
+    private void handleQuestionsFinished() {
+        makeEverythingInvisible();
+        mNumberOfWordsView.setText(String.valueOf(0));
+        invalidateOptionsMenu();
+    }
+
+    private void makeEverythingInvisible() {
+        mMongolView.setVisibility(View.INVISIBLE);
+        mDefinitionView.setVisibility(View.INVISIBLE);
+        mPronunciationView.setVisibility(View.INVISIBLE);
+        mPlayButton.setVisibility(View.INVISIBLE);
+        mButtonPanel.setVisibility(View.INVISIBLE);
+    }
+
+    private void setQuestionVisibility(Vocab item) {
+        mAnswerButton.setVisibility(View.VISIBLE);
+        mAnswerButtonLayout.setVisibility(View.GONE);
         mButtonPanel.setVisibility(View.VISIBLE);
+        switch (mStudyMode) {
+            case MONGOL:
+                mMongolView.setVisibility(View.VISIBLE);
+                mDefinitionView.setVisibility(View.INVISIBLE);
+                mPronunciationView.setVisibility(View.INVISIBLE);
+                mPlayButton.setVisibility(View.INVISIBLE);
+                break;
+            case DEFINITION:
+                mMongolView.setVisibility(View.INVISIBLE);
+                mDefinitionView.setVisibility(View.VISIBLE);
+                mPronunciationView.setVisibility(View.INVISIBLE);
+                mPlayButton.setVisibility(View.INVISIBLE);
+                break;
+            case PRONUNCIATION:
+                mMongolView.setVisibility(View.INVISIBLE);
+                mDefinitionView.setVisibility(View.INVISIBLE);
+                mPronunciationView.setVisibility(View.VISIBLE);
+                if (TextUtils.isEmpty(item.getAudioFilename())) {
+                    mPlayButton.setVisibility(View.INVISIBLE);
+                } else {
+                    mPlayButton.setVisibility(View.VISIBLE);
+                }
+                break;
+        }
+    }
+
+    private void setQuestionText(Vocab item) {
         setListNameWithQuestionsLeft();
         mMongolView.setText(item.getMongol());
         mDefinitionView.setText(item.getDefinition());
         mPronunciationView.setText(item.getPronunciation());
-        if (TextUtils.isEmpty(item.getAudioFilename())) {
-            mPlayButton.setVisibility(View.INVISIBLE);
-        } else {
-            mPlayButton.setVisibility(View.VISIBLE);
-        }
     }
 
     private void setListNameWithQuestionsLeft() {
@@ -454,8 +519,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Queue<Vocab> results) {
             mTodaysQuestions = results;
-            mCurrentVocabItem = mTodaysQuestions.poll(); // TODO careful of concurrency issues here
-            setQuestionText(mCurrentVocabItem);
+            prepareNextQuestion();
             mLocked = false;
             new GetList().execute(list);
         }
@@ -624,7 +688,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private List<VocabList> filterOutCurrentList(long currentListId, List<VocabList> lists) {
-        //long currentListId = adapter.getItem(mLongClickedItemIndex).getListId();
         List<VocabList> filtered = new ArrayList<>();
         for (VocabList list : lists) {
             if (list.getListId() != currentListId)
@@ -647,7 +710,6 @@ public class MainActivity extends AppCompatActivity {
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //long wordId = adapter.getItem(mLongClickedItemIndex).getId();
                 long newListId = otherLists.get(which).getListId();
                 new MoveVocabItemToNewList().execute(currentWordId, newListId);
             }

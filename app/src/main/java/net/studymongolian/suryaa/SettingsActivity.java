@@ -19,6 +19,8 @@ public class SettingsActivity extends AppCompatActivity {
     static final String KEY_PREF_NIGHT_MODE = "pref_night_mode"; // also in preferences.xml
     static final String KEY_PREF_FONT = "pref_font"; // also in preferences.xml
     static final String KEY_PREF_FONT_DEFAULT = "printing"; // also in preferences.xml
+    static final String KEY_PREF_STUDY_MODE = "pref_study_mode"; // also in preferences.xml
+    static final String KEY_PREF_STUDY_MODE_CODE_DEFAULT = "M"; // also in preferences.xml
     static final String KEY_PREF_HELP = "pref_help"; // also in preferences.xml
     static final String KEY_PREF_ABOUT = "pref_about"; // also in preferences.xml
 
@@ -26,6 +28,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     boolean mOldNightModeSetting;
     String mOldFontSetting;
+    String mOldStudyModeCodeSetting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +43,7 @@ public class SettingsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        mOldNightModeSetting = getIntent().getBooleanExtra(KEY_PREF_NIGHT_MODE, false);
-        mOldFontSetting = getIntent().getStringExtra(KEY_PREF_FONT);
-        if (mOldFontSetting == null) mOldFontSetting = KEY_PREF_FONT_DEFAULT;
+        initOldSettings();
 
         if (findViewById(R.id.fragment_container) != null) {
             if (savedInstanceState != null) {
@@ -51,6 +52,15 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsFragment settingsFragment = new SettingsFragment();
             getFragmentManager().beginTransaction().add(R.id.fragment_container, settingsFragment).commit();
         }
+    }
+
+    private void initOldSettings() {
+        // getting these from Intent rather than preferences because activity can get recreated
+        mOldNightModeSetting = getIntent().getBooleanExtra(KEY_PREF_NIGHT_MODE, false);
+        mOldFontSetting = getIntent().getStringExtra(KEY_PREF_FONT);
+        if (mOldFontSetting == null) mOldFontSetting = KEY_PREF_FONT_DEFAULT;
+        mOldStudyModeCodeSetting = getIntent().getStringExtra(KEY_PREF_STUDY_MODE);
+        if (mOldStudyModeCodeSetting == null) mOldStudyModeCodeSetting = KEY_PREF_STUDY_MODE_CODE_DEFAULT;
     }
 
     public static void setNightMode(Context context) {
@@ -67,19 +77,34 @@ public class SettingsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-                boolean currentNightModeSetting = sharedPref.getBoolean(KEY_PREF_NIGHT_MODE, false);
-                String currentFontSetting = sharedPref.getString(KEY_PREF_FONT, KEY_PREF_FONT_DEFAULT);
-                if (mOldNightModeSetting != currentNightModeSetting
-                        || !mOldFontSetting.equals(currentFontSetting)) {
-                    Intent intent = new Intent();
-                    setResult(RESULT_OK, intent);
-                }
-                finish();
+                onUserLeaving();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void onUserLeaving() {
+        if (settingWasChanged()) {
+            Intent intent = new Intent();
+            setResult(RESULT_OK, intent);
+        }
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        onUserLeaving();
+    }
+
+    private boolean settingWasChanged() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean currentNightModeSetting = sharedPref.getBoolean(KEY_PREF_NIGHT_MODE, false);
+        String currentFontSetting = sharedPref.getString(KEY_PREF_FONT, KEY_PREF_FONT_DEFAULT);
+        String currentStudyModeCode = sharedPref.getString(KEY_PREF_STUDY_MODE, KEY_PREF_STUDY_MODE_CODE_DEFAULT);
+        return mOldNightModeSetting != currentNightModeSetting
+                || !mOldFontSetting.equals(currentFontSetting)
+                || !mOldStudyModeCodeSetting.equals(currentStudyModeCode);
     }
 
     public static class SettingsFragment extends PreferenceFragment

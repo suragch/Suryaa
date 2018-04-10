@@ -410,10 +410,9 @@ public class IpaKeyboard extends Keyboard {
         return candidates;
     }
 
-
     private List<PopupKeyCandidate> getCandidatesForE() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("ə̌"));
+        candidates.add(new PopupKeyCandidate("̌"));
         return candidates;
     }
 

@@ -26,6 +26,7 @@
         android:layout_below="@id/toolbar"
         android:textColor="@color/textColorPrimary"
         android:padding="10dp"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"/>
 
     <FrameLayout
@@ -62,6 +63,7 @@
                 android:layout_weight="1"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:background="@drawable/btn_default_0"
                 android:text="@string/main_response_button_0"
                 android:onClick="onResponseButtonClick"
@@ -120,6 +122,7 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/btn_default_5"
                 android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:text="@string/main_response_button_5"
                 android:onClick="onResponseButtonClick"
                 style="@style/responseButtonStyle"
@@ -134,6 +137,7 @@
         android:orientation="horizontal"
         android:layout_below="@id/toolbar"
         android:layout_above="@id/button_panel"
+        android:paddingStart="20dp"
         android:paddingLeft="20dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -148,11 +152,9 @@
             android:layout_height="match_parent" />
 
         <ScrollView
-            android:id="@+id/answer_panel"
             android:layout_width="0dp"
             android:layout_weight=".8"
             android:layout_height="match_parent"
-            android:visibility="invisible"
             >
 
             <LinearLayout
