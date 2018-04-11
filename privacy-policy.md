@@ -1,3 +1,5 @@
+# Suryaa Privacy Policy
+
 ### Collection of personal information
 
 We do not collect any personal information in this app. Everything you type is stored in a local database on your phone. It is not sent to a remote server. Audio permission is requested so that you can record the pronunciation of your vocabulary words. The audio files are stored on your phone's SD card, not on a remote server.
