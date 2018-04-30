@@ -101,12 +101,11 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
             return;
         }
 
-        Intent intent = new Intent();
-
         if (mCurrentListWasDeleted && adapter.getItemCount() == 0) {
+            Intent intent = new Intent();
             intent.putExtra(LIST_ID_KEY, -1);
+            setResult(RESULT_OK, intent);
         }
-        setResult(RESULT_OK, intent);
         finish();
     }
 
