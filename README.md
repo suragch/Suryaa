@@ -5,6 +5,5 @@ Suryaa is a Mongolian language learning tool. You can use it to make flashcards 
 You can download the app or leave comments [here](http://www.studymongolian.net/apps/suryaa/).
 
 #### TODO
-* Choose which language item to display first
-* Add visual feedback when play button is pressed
-* Add IPA keyboards for pronunciation input
+* Add example sentences
+* Edit audio
