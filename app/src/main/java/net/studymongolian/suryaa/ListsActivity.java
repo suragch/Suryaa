@@ -509,8 +509,10 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
 
                 // export db and audio
                 File externalDir = appContext.getExternalFilesDir(null);
-                if (externalDir == null)
+                if (externalDir == null) {
+                    Log.e("ERROR", "ExportList: external directory null");
                     return false;
+                }
                 String pathName  = externalDir.getAbsolutePath()
                         + "/" + list.getListId();
                 File sourceFolder = new File(pathName);

@@ -98,7 +98,7 @@ public class DatabaseManager {
         String selection = VocabEntry.LIST_ID + " LIKE ? AND " +
                 nextDueDateColumn + " < " + midnightTonight;
         String[] selectionArgs = {String.valueOf(listId)};
-        String orderBy = nextDueDateColumn;
+        String orderBy = nextDueDateColumn + " DESC";
         Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs,
                 null,null, orderBy, null);
         int indexId = cursor.getColumnIndex(VocabEntry.ID);
@@ -335,6 +335,19 @@ public class DatabaseManager {
 
         String selection = VocabEntry.ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(vocabId)};
+
+        SQLiteDatabase db = mHelper.getWritableDatabase();
+        db.update(VocabEntry.VOCAB_TABLE, contentValues, selection, selectionArgs);
+        db.close();
+    }
+
+    public void deleteAudioForVocabItem(Vocab item) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(VocabEntry.LIST_ID, item.getListId());
+        contentValues.put(VocabEntry.AUDIO_FILENAME, "");
+
+        String selection = VocabEntry.ID + " LIKE ?";
+        String[] selectionArgs = {String.valueOf(item.getId())};
 
         SQLiteDatabase db = mHelper.getWritableDatabase();
         db.update(VocabEntry.VOCAB_TABLE, contentValues, selection, selectionArgs);

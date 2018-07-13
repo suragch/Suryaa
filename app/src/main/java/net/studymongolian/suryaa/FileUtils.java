@@ -5,6 +5,7 @@ import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,12 +29,19 @@ class FileUtils {
     static final String TEMP_AUDIO_FILE_NAME = "temp_recording.3gp";
     static final String AUDIO_FILE_EXTENSION = ".3gp";
     static final String EXPORT_IMPORT_FILE_EXTENSION = ".csv";
+    private static final String TAG = "LOGTAG";
+
+    static String getAudioPathName(Context context, long listId, String fileName) {
+        File externalDir = context.getExternalFilesDir(null);
+        if (externalDir == null) return null;
+        return externalDir.getAbsolutePath() + File.separator + listId + File.separator + fileName;
+    }
 
     static boolean exportList(
             Context context,
             List<Vocab> items,
             String listName,
-            File sourceAudioFolder) throws Exception {
+            File sourceAudioFolder) {
 
         String underscoredListName = listName.replace(' ', '_');
 
@@ -44,17 +52,32 @@ class FileUtils {
             scanFile(context, destFolder);
         }
 
-
         // build the csv text and copy audio files
         StringBuilder content = new StringBuilder();
         for (Vocab item : items) {
+
+            boolean successfullyCopied = copyAudioFileOver(context, item, sourceAudioFolder, destFolder);
+            if (!successfullyCopied) {
+                if (!TextUtils.isEmpty(item.getAudioFilename()))
+                    Log.e(TAG, "exportList: copy Audio File failed for "
+                            + item.getMongol() + ", "
+                            + item.getAudioFilename());
+                item.setAudioFilename("");
+            }
+
             String row = convertToCvsRow(item);
             content.append(row);
             content.append("\n");
-            copyAudioFileOver(context, item, sourceAudioFolder, destFolder);
         }
+
         String csvFileName = underscoredListName + EXPORT_IMPORT_FILE_EXTENSION;
-        copyCsvFileOver(context, destFolder, csvFileName, content.toString());
+        try {
+            copyCsvFileOver(context, destFolder, csvFileName, content.toString());
+        } catch (IOException e) {
+            Log.e(TAG, "exportList: copyCsvFileOver failed");
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
@@ -69,13 +92,22 @@ class FileUtils {
         scanFile(context, csvFile);
     }
 
-    private static void copyAudioFileOver(Context context, Vocab item, File sourceAudioFolder, File destFolder) throws IOException {
+    /**
+     * @return whether file was copied successfully
+     */
+    private static boolean copyAudioFileOver(Context context, Vocab item, File sourceAudioFolder, File destFolder) {
         String audio = item.getAudioFilename();
-        if (TextUtils.isEmpty(audio)) return;
+        if (TextUtils.isEmpty(audio)) return false;
         File source = new File(sourceAudioFolder, audio);
         File dest = new File(destFolder, audio);
-        copyFile(source, dest);
-        scanFile(context, dest);
+        try {
+            copyFile(source, dest);
+            scanFile(context, dest);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     private static String convertToCvsRow(Vocab item) {
@@ -93,7 +125,7 @@ class FileUtils {
     private static void scanFile(Context context, File file) {
         // this registers the file so that file explorers can find it more quickly
         MediaScannerConnection
-                .scanFile(context, new String[] {file.getAbsolutePath()},
+                .scanFile(context, new String[]{file.getAbsolutePath()},
                         null, null);
     }
 
@@ -212,7 +244,10 @@ class FileUtils {
         return result;
     }
 
-    static void copyFile(File sourceFile, File destFile) throws IOException {
+    /**
+     * @return whether file was successfully copied
+     */
+    static boolean copyFile(File sourceFile, File destFile) throws IOException {
         if (!destFile.getParentFile().exists())
             destFile.getParentFile().mkdirs();
 
@@ -227,6 +262,8 @@ class FileUtils {
             source = new FileInputStream(sourceFile).getChannel();
             destination = new FileOutputStream(destFile).getChannel();
             destination.transferFrom(source, 0, source.size());
+        }catch (IOException e) {
+            return false;
         } finally {
             if (source != null) {
                 source.close();
@@ -235,5 +272,30 @@ class FileUtils {
                 destination.close();
             }
         }
+
+        return true;
     }
+
+    public static void moveFile(File oldFile, File newFile) {
+        try {
+            copyFile(oldFile, newFile);
+            oldFile.delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void moveAudioFile(Context context,
+                               String audioFileName,
+                               long oldListId,
+                               long newListId) {
+
+        String oldPath = FileUtils.getAudioPathName(context, oldListId, audioFileName);
+        String newPath = FileUtils.getAudioPathName(context, newListId, audioFileName);
+        if (oldPath == null || newPath == null) return;
+        File oldFile = new File(oldPath);
+        File newFile = new File(newPath);
+        FileUtils.moveFile(oldFile, newFile);
+    }
+
 }

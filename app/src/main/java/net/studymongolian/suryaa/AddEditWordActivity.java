@@ -139,7 +139,7 @@ public class AddEditWordActivity extends AppCompatActivity {
 
     private boolean audioFileExists() {
         if (mTempAudioFilePathName.exists()) return true;
-        String audioPath = getAudioPathName(mCurrentListId, mEditingWord.getAudioFilename());
+        String audioPath = FileUtils.getAudioPathName(this, mCurrentListId, mEditingWord.getAudioFilename());
         if (audioPath == null) return false;
         if (!audioPath.endsWith(FileUtils.AUDIO_FILE_EXTENSION)) return false;
         File audioFile = new File(audioPath);
@@ -189,7 +189,7 @@ public class AddEditWordActivity extends AppCompatActivity {
             try {
                 String dataSource = mTempAudioFilePathName.getAbsolutePath();
                 if (!mTempAudioFilePathName.exists() && mEditingWord != null) {
-                    dataSource = getAudioPathName(mCurrentListId, mEditingWord.getAudioFilename());
+                    dataSource = FileUtils.getAudioPathName(AddEditWordActivity.this, mCurrentListId, mEditingWord.getAudioFilename());
                 }
                 mPlayer.setDataSource(dataSource);
                 mPlayer.prepare();
@@ -319,7 +319,7 @@ public class AddEditWordActivity extends AppCompatActivity {
         boolean nameExists = true;
         while (nameExists) {
             String filename = newName + FileUtils.AUDIO_FILE_EXTENSION;
-            String path = getAudioPathName(listId, filename);
+            String path = FileUtils.getAudioPathName(this, listId, filename);
             if (path == null) return name;
             File file = new File(path);
             if (!file.exists()) break;
@@ -404,17 +404,11 @@ public class AddEditWordActivity extends AppCompatActivity {
         return new ColorDrawable(color);
     }
 
-    private String getAudioPathName(long listId, String fileName) {
-        File externalDir = getExternalFilesDir(null);
-        if (externalDir == null) return null;
-        return externalDir.getAbsolutePath() + File.separator + listId + File.separator + fileName;
-    }
-
 
     private void deleteAudioFile(Vocab vocab) {
         if (TextUtils.isEmpty(vocab.getAudioFilename()))
             return;
-        String filePathName = getAudioPathName(vocab.getListId(), vocab.getAudioFilename());
+        String filePathName = FileUtils.getAudioPathName(this, vocab.getListId(), vocab.getAudioFilename());
         if (filePathName == null) return;
         try {
             File file = new File(filePathName);
@@ -476,7 +470,7 @@ public class AddEditWordActivity extends AppCompatActivity {
         if (!mTempAudioFilePathName.exists()) return;
         if (TextUtils.isEmpty(item.getAudioFilename())) return;
 
-        String filePath = getAudioPathName(item.getListId(), item.getAudioFilename());
+        String filePath = FileUtils.getAudioPathName(this, item.getListId(), item.getAudioFilename());
         if (filePath == null) return;
 
         File destFile = new File(filePath);

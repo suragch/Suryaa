@@ -1,5 +1,7 @@
 package net.studymongolian.suryaa;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,6 +31,7 @@ import net.studymongolian.suryaa.database.DatabaseManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -101,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         // get current list
         long currentListId = sharedPref.getLong(SettingsActivity.KEY_PREF_CURRENT_LIST, 1);
         // 1 is the default id (used on first run)
-        new GetTodaysVocab().execute(currentListId);
+        new GetTodaysVocab(this).execute(currentListId);
 
     }
 
@@ -178,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void moveWord() {
-        new ShowLists().execute(mCurrentVocabItem);
+        new ShowLists(this).execute(mCurrentVocabItem);
     }
 
     @Override
@@ -191,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                 if (data != null) {
                     long listId = data.getLongExtra(ListsActivity.LIST_ID_KEY, -1);
                     if (listId >= 0) {
-                        new GetTodaysVocab().execute(listId);
+                        new GetTodaysVocab(this).execute(listId);
                     } else {
                         handleQuestionsFinished();
                     }
@@ -200,12 +203,12 @@ public class MainActivity extends AppCompatActivity {
             case ADD_WORD_ACTIVITY_REQUEST_CODE:
                 boolean wordsAdded = data.getBooleanExtra(AddEditWordActivity.WORDS_ADDED_KEY, false);
                 if (wordsAdded) {
-                    new GetTodaysVocab().execute(mCurrentList.getListId());
+                    new GetTodaysVocab(this).execute(mCurrentList.getListId());
                     return;
                 }
                 boolean wordEdited = data.getBooleanExtra(AddEditWordActivity.EDIT_MODE_KEY, false);
                 if (wordEdited) {
-                    new RefreshVocabItem().execute(mCurrentVocabItem.getId());
+                    new RefreshVocabItem(this).execute(mCurrentVocabItem.getId());
                 }
                 break;
             case SETTINGS_ACTIVITY_REQUEST_CODE:
@@ -214,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
             case ALL_WORDS_ACTIVITY_REQUEST_CODE:
                 boolean changesMade = data.getBooleanExtra(AllWordsActivity.CHANGES_MADE_KEY, false);
                 if (changesMade) {
-                    new GetTodaysVocab().execute(mCurrentList.getListId());
+                    new GetTodaysVocab(this).execute(mCurrentList.getListId());
                 }
                 break;
         }
@@ -262,13 +265,19 @@ public class MainActivity extends AppCompatActivity {
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    mPlayButton.setImageResource(R.drawable.play_button);
+                    setReadyToPlayImage();
                 }
             });
         }
 
 
     };
+
+
+
+    private void setReadyToPlayImage() {
+        mPlayButton.setImageResource(R.drawable.play_button);
+    }
 
     private String getPathForCurrentAudioFile() {
         String filename = mCurrentVocabItem.getAudioFilename();
@@ -292,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                new DeleteVocab().execute(mCurrentVocabItem);
+                new DeleteVocab(MainActivity.this).execute(mCurrentVocabItem);
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -312,8 +321,25 @@ public class MainActivity extends AppCompatActivity {
         mMongolView.setVisibility(View.VISIBLE);
         mDefinitionView.setVisibility(View.VISIBLE);
         mPronunciationView.setVisibility(View.VISIBLE);
-        if (!TextUtils.isEmpty(mCurrentVocabItem.getAudioFilename())) {
+        if (audioFileExistsForCurrentItem()) {
+            setReadyToPlayImage();
             mPlayButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private boolean audioFileExistsForCurrentItem() {
+        if (TextUtils.isEmpty(mCurrentVocabItem.getAudioFilename()))
+            return false;
+        File audioFile = new File(
+                getExternalFilesDir(null),
+                String.valueOf(mCurrentVocabItem.getListId()) + File.separator
+                        + mCurrentVocabItem.getAudioFilename());
+        if (audioFile.exists()) {
+            return true;
+        } else {
+            // remove reference from db
+            new DeleteCurrentAudioFile(this).execute();
+            return false;
         }
     }
 
@@ -324,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (mCurrentVocabItem.isFirstViewToday()) {
             calculateSuperMemo2Algorithm(response);
-            new UpdateVocabPracticeData().execute(mCurrentVocabItem);
+            new UpdateVocabPracticeData(this).execute(mCurrentVocabItem);
             mCurrentVocabItem.setFirstViewToday(false);
             showNextDueDate();
         }
@@ -469,6 +495,7 @@ public class MainActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(item.getAudioFilename())) {
                     mPlayButton.setVisibility(View.INVISIBLE);
                 } else {
+                    setReadyToPlayImage();
                     mPlayButton.setVisibility(View.VISIBLE);
                 }
                 break;
@@ -492,13 +519,21 @@ public class MainActivity extends AppCompatActivity {
         mNumberOfWordsView.setText(String.valueOf(today));
     }
 
-    private class GetTodaysVocab extends AsyncTask<Long, Void, Queue<Vocab>> {
+    private static class GetTodaysVocab extends AsyncTask<Long, Void, Queue<Vocab>> {
 
         private long list;
 
+        private WeakReference<MainActivity> activityReference;
+
+        GetTodaysVocab(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
         @Override
         protected void onPreExecute() {
-            mLocked = true;
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.mLocked = true;
         }
 
         @Override
@@ -507,11 +542,13 @@ public class MainActivity extends AppCompatActivity {
             list = params[0];
 
             Queue<Vocab> results = new LinkedList<>();
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
 
             try {
 
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                results = dbAdapter.getTodaysVocab(list, mStudyMode);
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
+                results = dbAdapter.getTodaysVocab(list, activity.mStudyMode);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -522,15 +559,24 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Queue<Vocab> results) {
-            mTodaysQuestions = results;
-            prepareNextQuestion();
-            mLocked = false;
-            new GetList().execute(list);
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+
+            activity.mTodaysQuestions = results;
+            activity.prepareNextQuestion();
+            activity.mLocked = false;
+            new GetList(activity).execute(list);
         }
 
     }
 
-    private class GetList extends AsyncTask<Long, Void, VocabList> {
+    private static class GetList extends AsyncTask<Long, Void, VocabList> {
+
+        private WeakReference<MainActivity> activityReference;
+
+        GetList(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
 
         @Override
         protected VocabList doInBackground(Long... params) {
@@ -538,10 +584,12 @@ public class MainActivity extends AppCompatActivity {
             long list = params[0];
 
             VocabList result = null;
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
 
             try {
 
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
                 result = dbAdapter.getList(list);
             } catch (Exception e) {
                 Log.i("app", e.toString());
@@ -553,19 +601,28 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(VocabList result) {
-            mCurrentList = result;
-            setListNameWithQuestionsLeft();
-            invalidateOptionsMenu();
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.mCurrentList = result;
+            activity.setListNameWithQuestionsLeft();
+            activity.invalidateOptionsMenu();
         }
 
     }
 
-    private class UpdateVocabPracticeData extends AsyncTask<Vocab, Void, Void> {
+    private static class UpdateVocabPracticeData extends AsyncTask<Vocab, Void, Void> {
+
+        private WeakReference<MainActivity> activityReference;
+
+        UpdateVocabPracticeData(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
 
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
-            mLocked = true;
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.mLocked = true;
 
         }
 
@@ -578,12 +635,14 @@ public class MainActivity extends AppCompatActivity {
             final int consecutiveCorrect = item.getConsecutiveCorrect();
             final float eFactor = item.getEasinessFactor();
 
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
             try {
 
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
                 dbAdapter.updateVocabItemPracticeData(
-                        mStudyMode, id, nextDueDate, consecutiveCorrect, eFactor);
-                // TODO if audio file was updated then change
+                        activity.mStudyMode, id, nextDueDate, consecutiveCorrect, eFactor);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -593,12 +652,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void results) {
-            mLocked = false;
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.mLocked = false;
         }
 
     }
 
-    private class RefreshVocabItem extends AsyncTask<Long, Void, Vocab> {
+    private static class RefreshVocabItem extends AsyncTask<Long, Void, Vocab> {
+
+        private WeakReference<MainActivity> activityReference;
+
+        RefreshVocabItem(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
 
         @Override
         protected Vocab doInBackground(Long... params) {
@@ -607,10 +674,13 @@ public class MainActivity extends AppCompatActivity {
 
             Vocab vocabItem = null;
 
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
             try {
 
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                vocabItem = dbAdapter.getVocabItem(vocabId, mStudyMode);
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
+                vocabItem = dbAdapter.getVocabItem(vocabId, activity.mStudyMode);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -620,23 +690,34 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Vocab vocabItem) {
-            mCurrentVocabItem = vocabItem;
-            setQuestionText(vocabItem);
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.mCurrentVocabItem = vocabItem;
+            activity.setQuestionText(vocabItem);
         }
 
     }
 
-    private class DeleteVocab extends AsyncTask<Vocab, Void, Void> {
+    private static class DeleteVocab extends AsyncTask<Vocab, Void, Void> {
+
+        private WeakReference<MainActivity> activityReference;
+
+        DeleteVocab(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
 
         @Override
         protected Void doInBackground(Vocab... params) {
 
             Vocab item = params[0];
 
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
             try {
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
                 dbAdapter.deleteVocabItem(item.getId());
-                deleteAudioFile(item);
+                activity.deleteAudioFile(item);
 
             } catch (Exception e) {
                 Log.i("app", e.toString());
@@ -645,28 +726,78 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        private void deleteAudioFile(Vocab item) {
-            if (TextUtils.isEmpty(item.getAudioFilename()))
-                return;
-            File audioFile = new File(
-                    getExternalFilesDir(null),
-                    String.valueOf(item.getListId()) + File.separator
-                            + item.getAudioFilename());
-            if (audioFile.exists() && audioFile.delete())
-                Log.i(TAG, "File deleted: " + item.getAudioFilename());
-        }
-
         @Override
         protected void onPostExecute(Void results) {
-            prepareNextQuestion();
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.prepareNextQuestion();
         }
 
     }
 
-    // TODO this is not dry, repeated in AllWordsActivity
-    private class ShowLists extends AsyncTask<Vocab, Void, List<VocabList>> {
+    private void deleteAudioFile(Vocab item) {
+        if (TextUtils.isEmpty(item.getAudioFilename()))
+            return;
+        File audioFile = new File(
+                getExternalFilesDir(null),
+                String.valueOf(item.getListId()) + File.separator
+                        + item.getAudioFilename());
+        if (audioFile.exists() && audioFile.delete())
+            Log.i(TAG, "File deleted: " + item.getAudioFilename());
+    }
+
+    private static class DeleteCurrentAudioFile extends AsyncTask<Void, Void, Void> {
+
+        Vocab item;
+
+        private WeakReference<MainActivity> activityReference;
+
+        DeleteCurrentAudioFile(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            item = activity.mCurrentVocabItem;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
+            try {
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
+                dbAdapter.deleteAudioForVocabItem(item);
+                activity.deleteAudioFile(item);
+
+            } catch (Exception e) {
+                Log.i("app", e.toString());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void results) {
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.mCurrentVocabItem.setAudioFilename("");
+        }
+    }
+
+    private static class ShowLists extends AsyncTask<Vocab, Void, List<VocabList>> {
 
         Vocab currentItem;
+
+        private WeakReference<MainActivity> activityReference;
+
+        ShowLists(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
 
         @Override
         protected List<VocabList> doInBackground(Vocab... params) {
@@ -674,8 +805,11 @@ public class MainActivity extends AppCompatActivity {
             currentItem = params[0];
             List<VocabList> results = null;
 
+            Activity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
             try {
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
                 results = dbAdapter.getAllLists();
             } catch (Exception e) {
                 Log.i("app", e.toString());
@@ -686,63 +820,89 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<VocabList> results) {
+            Activity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
             List<VocabList> otherLists = filterOutCurrentList(currentItem.getListId(), results);
-            showListDialog(currentItem.getId(), otherLists);
-        }
-    }
-
-    private List<VocabList> filterOutCurrentList(long currentListId, List<VocabList> lists) {
-        List<VocabList> filtered = new ArrayList<>();
-        for (VocabList list : lists) {
-            if (list.getListId() != currentListId)
-                filtered.add(list);
-        }
-        return filtered;
-    }
-
-    private void showListDialog(final long currentWordId, final List<VocabList> otherLists) {
-        if (otherLists == null || otherLists.size() ==0) {
-            Toast.makeText(this, "There are no other lists", Toast.LENGTH_SHORT).show();
-            // TODO remove the MOVE item from the menu or allow a new list to be created here.
-            return;
+            showListDialog(otherLists);
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Move to another list");
-
-        String[] items = getListNames(otherLists);
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                long newListId = otherLists.get(which).getListId();
-                new MoveVocabItemToNewList().execute(currentWordId, newListId);
+        private List<VocabList> filterOutCurrentList(long currentListId, List<VocabList> lists) {
+            List<VocabList> filtered = new ArrayList<>();
+            for (VocabList list : lists) {
+                if (list.getListId() != currentListId)
+                    filtered.add(list);
             }
-        });
-        builder.setNegativeButton("Cancel", null);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    private String[] getListNames(List<VocabList> otherLists) {
-        String[] names = new String[otherLists.size()];
-        for (int i = 0; i < otherLists.size(); i++) {
-            names[i] = otherLists.get(i).getName();
+            return filtered;
         }
-        return names;
+
+        private void showListDialog(final List<VocabList> otherLists) {
+            final MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+
+            if (otherLists == null || otherLists.size() ==0) {
+                Toast.makeText(activity, "There are no other lists", Toast.LENGTH_SHORT).show();
+                // TODO remove the MOVE item from the menu or allow a new list to be created here.
+                return;
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            builder.setTitle("Move to another list");
+
+            String[] items = getListNames(otherLists);
+            builder.setItems(items, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    long newListId = otherLists.get(which).getListId();
+                    new MoveVocabItemToNewList(activity, currentItem, newListId).execute();
+                }
+            });
+            builder.setNegativeButton("Cancel", null);
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
+        private String[] getListNames(List<VocabList> otherLists) {
+            String[] names = new String[otherLists.size()];
+            for (int i = 0; i < otherLists.size(); i++) {
+                names[i] = otherLists.get(i).getName();
+            }
+            return names;
+        }
     }
 
-    private class MoveVocabItemToNewList extends AsyncTask<Long, Void, Void> {
+
+
+
+
+    private static class MoveVocabItemToNewList extends AsyncTask<Void, Void, Void> {
+
+        private WeakReference<MainActivity> activityReference;
+        String audioFileName;
+        long vocabId;
+        long oldListId;
+        long newListId;
+
+        MoveVocabItemToNewList(MainActivity context,
+                               Vocab currentItem,
+                               long newListId) {
+            activityReference = new WeakReference<>(context);
+            this.audioFileName = currentItem.getAudioFilename();
+            this.vocabId = currentItem.getId();
+            this.oldListId = currentItem.getListId();
+            this.newListId = newListId;
+        }
 
         @Override
-        protected Void doInBackground(Long... params) {
+        protected Void doInBackground(Void... params) {
 
-            long vocabId = params[0];
-            long listId = params[1];
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
 
             try {
 
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                dbAdapter.updateVocabItemList(vocabId, listId);
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
+                dbAdapter.updateVocabItemList(vocabId, newListId);
+                FileUtils.moveAudioFile(activity, audioFileName, oldListId, newListId);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -750,9 +910,13 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
+
+
         @Override
         protected void onPostExecute(Void results) {
-            prepareNextQuestion();
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.prepareNextQuestion();
         }
 
     }

@@ -23,6 +23,7 @@ import net.studymongolian.suryaa.database.DatabaseManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -305,7 +306,7 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
         @Override
         protected void onPostExecute(List<VocabList> results) {
             List<VocabList> otherLists = filterOutCurrentList(currentItem.getListId(), results);
-            showListDialog(currentItem.getId(), otherLists);
+            showListDialog(currentItem, otherLists);
         }
     }
 
@@ -318,7 +319,7 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
         return filtered;
     }
 
-    private void showListDialog(final long currentWordId, final List<VocabList> otherLists) {
+    private void showListDialog(final Vocab currentItem, final List<VocabList> otherLists) {
         if (otherLists == null || otherLists.size() ==0) {
             Toast.makeText(this, "There are no other lists", Toast.LENGTH_SHORT).show();
             // TODO remove the MOVE item from the menu or allow a new list to be created here.
@@ -333,7 +334,7 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 long newListId = otherLists.get(which).getListId();
-                new MoveVocabItemToNewList().execute(currentWordId, newListId);
+                new MoveVocabItemToNewList(AllWordsActivity.this, currentItem, newListId).execute();
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -349,18 +350,35 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
         return names;
     }
 
-    private class MoveVocabItemToNewList extends AsyncTask<Long, Void, Void> {
+    private static class MoveVocabItemToNewList extends AsyncTask<Void, Void, Void> {
+
+        private WeakReference<AllWordsActivity> activityReference;
+        String audioFileName;
+        long vocabId;
+        long oldListId;
+        long newListId;
+
+        MoveVocabItemToNewList(AllWordsActivity context,
+                               Vocab currentItem,
+                               long newListId) {
+            activityReference = new WeakReference<>(context);
+            this.audioFileName = currentItem.getAudioFilename();
+            this.vocabId = currentItem.getId();
+            this.oldListId = currentItem.getListId();
+            this.newListId = newListId;
+        }
 
         @Override
-        protected Void doInBackground(Long... params) {
+        protected Void doInBackground(Void... params) {
 
-            long vocabId = params[0];
-            long listId = params[1];
+            AllWordsActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
 
             try {
 
-                DatabaseManager dbAdapter = new DatabaseManager(getApplicationContext());
-                dbAdapter.updateVocabItemList(vocabId, listId);
+                DatabaseManager dbAdapter = new DatabaseManager(activity);
+                dbAdapter.updateVocabItemList(vocabId, newListId);
+                FileUtils.moveAudioFile(activity, audioFileName, oldListId, newListId);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -370,7 +388,9 @@ public class AllWordsActivity extends AppCompatActivity implements AllWordsRvAda
 
         @Override
         protected void onPostExecute(Void results) {
-            removeItemFromAdapter();
+            AllWordsActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            activity.removeItemFromAdapter();
         }
 
     }

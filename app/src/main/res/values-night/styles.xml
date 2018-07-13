@@ -10,7 +10,6 @@
         <item name="keyPressedColor">@color/colorAccent</item>
         <item name="primaryTextColor">@color/textColorPrimary</item>
         <item name="secondaryTextColor">@color/textColorPrimary</item>
-        <item name="keyImageTheme">dark</item>
         <item name="keySpacing">2dp</item>
         <item name="keyBorderRadius">3dp</item>
         <item name="popupTextColor">@color/black</item>
