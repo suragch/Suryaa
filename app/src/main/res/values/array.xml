@@ -12,6 +12,15 @@
         <item>Pronunciation</item>
     </string-array>
 
+    <string-array name="max_items_entries">
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>50</item>
+        <item>100</item>
+        <item>No limit</item>
+    </string-array>
+
     <!-- These values are for internal use. Don't translate. -->
     <string name="pref_font_type_default">printing</string>
     <string-array name="font_type_values">
@@ -25,6 +34,17 @@
         <item>M</item>
         <item>D</item>
         <item>P</item>
+    </string-array>
+
+    <!-- These values are for internal use. Don't translate. -->
+    <string name="pref_max_items_default">20</string>
+    <string-array name="max_items_values">
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>50</item>
+        <item>100</item>
+        <item>none</item>
     </string-array>
 
     <string-array name="default_data_mongol">

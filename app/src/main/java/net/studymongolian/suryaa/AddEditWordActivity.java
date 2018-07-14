@@ -103,7 +103,7 @@ public class AddEditWordActivity extends AppCompatActivity {
         etDefinition = findViewById(R.id.etDefinition);
         etPronunciation = findViewById(R.id.etPronunciation);
         etPronunciation.setTypeface(MongolFont.get(MainActivity.IPA_FONT, this));
-        MyInputMethodService imeContainer = findViewById(R.id.keyboard_container);
+        MyImeContainer imeContainer = findViewById(R.id.keyboard_container);
 
         MongolInputMethodManager mimm = new MongolInputMethodManager();
         mimm.addEditor(etDefinition, true);

@@ -20,6 +20,14 @@
         android:entries="@array/study_mode_entries"
         android:entryValues="@array/study_mode_values"
         android:defaultValue="@string/pref_study_mode_default" />
+    <ListPreference
+        android:key="pref_max_items"
+        android:title="Max words per study session"
+        android:summary="%s"
+        android:dialogTitle="Max words per study session"
+        android:entries="@array/max_items_entries"
+        android:entryValues="@array/max_items_values"
+        android:defaultValue="@string/pref_max_items_default"/>
     <Preference
         android:key="pref_help"
         android:title="Help">
@@ -27,9 +35,5 @@
     <Preference
         android:key="pref_about"
         android:title="About">
-        <!--<intent-->
-            <!--android:action="android.intent.action.VIEW"-->
-            <!--android:targetPackage="net.studymongolian.suryaa"-->
-            <!--android:targetClass="net.studymongolian.suryaa.AboutActivity"/>-->
     </Preference>
 </PreferenceScreen>

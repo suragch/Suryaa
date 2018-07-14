@@ -68,7 +68,7 @@ public class DatabaseManager {
         return vocabList;
     }
 
-    public Queue<Vocab> getTodaysVocab(long listId, StudyMode studyMode) {
+    public Queue<Vocab> getTodaysVocab(long listId, StudyMode studyMode, int maxItems) {
 
         Queue<Vocab> vocabList = new LinkedList<>();
 
@@ -99,8 +99,9 @@ public class DatabaseManager {
                 nextDueDateColumn + " < " + midnightTonight;
         String[] selectionArgs = {String.valueOf(listId)};
         String orderBy = nextDueDateColumn + " DESC";
+        String limit = String.valueOf(maxItems);
         Cursor cursor = db.query(VocabEntry.VOCAB_TABLE, columns, selection, selectionArgs,
-                null,null, orderBy, null);
+                null,null, orderBy, limit);
         int indexId = cursor.getColumnIndex(VocabEntry.ID);
         int indexMongol = cursor.getColumnIndex(VocabEntry.MONGOL);
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);

@@ -95,7 +95,7 @@
 
     </ScrollView>
 
-    <net.studymongolian.suryaa.MyInputMethodService
+    <net.studymongolian.suryaa.MyImeContainer
         android:id="@+id/keyboard_container"
         android:layout_width="0dp"
         android:layout_height="240dp"
@@ -118,6 +118,6 @@
             style="@style/KeyboardStyle"
             />
 
-    </net.studymongolian.suryaa.MyInputMethodService>
+    </net.studymongolian.suryaa.MyImeContainer>
 
 </android.support.constraint.ConstraintLayout>

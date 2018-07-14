@@ -7,17 +7,17 @@ import android.view.inputmethod.EditorInfo;
 
 import net.studymongolian.mongollibrary.ImeContainer;
 
-public class MyInputMethodService extends ImeContainer {
+public class MyImeContainer extends ImeContainer {
 
-    public MyInputMethodService(Context context) {
+    public MyImeContainer(Context context) {
         super(context);
     }
 
-    public MyInputMethodService(Context context, AttributeSet attrs) {
+    public MyImeContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public MyInputMethodService(Context context, AttributeSet attrs, int defStyle) {
+    public MyImeContainer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 

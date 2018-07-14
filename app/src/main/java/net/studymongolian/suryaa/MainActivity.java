@@ -1,7 +1,6 @@
 package net.studymongolian.suryaa;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -170,9 +169,12 @@ public class MainActivity extends AppCompatActivity {
                         SettingsActivity.KEY_PREF_FONT, SettingsActivity.KEY_PREF_FONT_DEFAULT);
                 String currentStudyModeCode = sharedPref.getString(
                         SettingsActivity.KEY_PREF_STUDY_MODE, SettingsActivity.KEY_PREF_STUDY_MODE_CODE_DEFAULT);
+                String currentMaxItems = sharedPref.getString(
+                        SettingsActivity.KEY_PREF_MAX_ITEMS, SettingsActivity.KEY_PREF_MAX_ITEMS_DEFAULT);
                 intent.putExtra(SettingsActivity.KEY_PREF_NIGHT_MODE, currentNightMode);
                 intent.putExtra(SettingsActivity.KEY_PREF_FONT, currentFont);
                 intent.putExtra(SettingsActivity.KEY_PREF_STUDY_MODE, currentStudyModeCode);
+                intent.putExtra(SettingsActivity.KEY_PREF_MAX_ITEMS, currentMaxItems);
                 startActivityForResult(intent, SETTINGS_ACTIVITY_REQUEST_CODE);
                 return true;
             default:
@@ -272,7 +274,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     };
-
 
 
     private void setReadyToPlayImage() {
@@ -524,6 +525,7 @@ public class MainActivity extends AppCompatActivity {
         private long list;
 
         private WeakReference<MainActivity> activityReference;
+        private int limit;
 
         GetTodaysVocab(MainActivity context) {
             activityReference = new WeakReference<>(context);
@@ -534,6 +536,18 @@ public class MainActivity extends AppCompatActivity {
             MainActivity activity = activityReference.get();
             if (activity == null || activity.isFinishing()) return;
             activity.mLocked = true;
+            setMaxQuestionsForThisStudySession(activity);
+        }
+
+        private void setMaxQuestionsForThisStudySession(MainActivity activity) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+            String maxItems = sharedPref.getString(SettingsActivity.KEY_PREF_MAX_ITEMS,
+                    SettingsActivity.KEY_PREF_MAX_ITEMS_DEFAULT);
+            try {
+                limit = Integer.parseInt(maxItems);
+            } catch (NumberFormatException e) {
+                limit = Integer.MAX_VALUE;
+            }
         }
 
         @Override
@@ -548,7 +562,7 @@ public class MainActivity extends AppCompatActivity {
             try {
 
                 DatabaseManager dbAdapter = new DatabaseManager(activity);
-                results = dbAdapter.getTodaysVocab(list, activity.mStudyMode);
+                results = dbAdapter.getTodaysVocab(list, activity.mStudyMode, limit);
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -839,7 +853,7 @@ public class MainActivity extends AppCompatActivity {
             final MainActivity activity = activityReference.get();
             if (activity == null || activity.isFinishing()) return;
 
-            if (otherLists == null || otherLists.size() ==0) {
+            if (otherLists == null || otherLists.size() == 0) {
                 Toast.makeText(activity, "There are no other lists", Toast.LENGTH_SHORT).show();
                 // TODO remove the MOVE item from the menu or allow a new list to be created here.
                 return;
@@ -869,10 +883,6 @@ public class MainActivity extends AppCompatActivity {
             return names;
         }
     }
-
-
-
-
 
     private static class MoveVocabItemToNewList extends AsyncTask<Void, Void, Void> {
 
@@ -909,7 +919,6 @@ public class MainActivity extends AppCompatActivity {
 
             return null;
         }
-
 
 
         @Override
