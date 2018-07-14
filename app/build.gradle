@@ -8,8 +8,8 @@ android {
         applicationId "net.studymongolian.suryaa"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 6
-        versionName "2.0.1"
+        versionCode 7
+        versionName "2.1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
