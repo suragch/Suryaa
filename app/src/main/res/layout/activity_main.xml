@@ -182,9 +182,14 @@
                     android:id="@+id/ib_play_audio"
                     style="@style/playButtonStyle"
                     android:contentDescription="@string/play_audio_content_description"
+                    android:layout_marginBottom="20dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
+                <net.studymongolian.mongollibrary.MongolTextView
+                    android:id="@+id/mtv_example_sentences"
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp" />
             </LinearLayout>
         </ScrollView>
 

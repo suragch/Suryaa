@@ -407,6 +407,7 @@ public class IpaKeyboard extends Keyboard {
     private List<PopupKeyCandidate> getCandidatesForA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
         candidates.add(new PopupKeyCandidate("æ"));
+        candidates.add(new PopupKeyCandidate("ɛ"));
         return candidates;
     }
 

@@ -56,9 +56,10 @@ public class AddEditWordActivity extends AppCompatActivity {
     ImageView mPlayButton;
     private MediaPlayer mPlayer = null;
 
-    MongolEditText mongolEditText;
+    MongolEditText metMongol;
     EditText etDefinition;
     EditText etPronunciation;
+    MongolEditText metExampleSentences;
 
     private long mCurrentListId;
     private Vocab mEditingWord;
@@ -99,16 +100,18 @@ public class AddEditWordActivity extends AppCompatActivity {
     }
 
     private void initKeyboard() {
-        mongolEditText = findViewById(R.id.metMongolWord);
+        metMongol = findViewById(R.id.metMongolWord);
         etDefinition = findViewById(R.id.etDefinition);
         etPronunciation = findViewById(R.id.etPronunciation);
         etPronunciation.setTypeface(MongolFont.get(MainActivity.IPA_FONT, this));
+        metExampleSentences = findViewById(R.id.met_example_sentences);
         MyImeContainer imeContainer = findViewById(R.id.keyboard_container);
 
         MongolInputMethodManager mimm = new MongolInputMethodManager();
         mimm.addEditor(etDefinition, true);
         mimm.addEditor(etPronunciation, false);
-        mimm.addEditor(mongolEditText, false);
+        mimm.addEditor(metMongol, false);
+        mimm.addEditor(metExampleSentences, false);
         mimm.setIme(imeContainer);
     }
 
@@ -154,7 +157,8 @@ public class AddEditWordActivity extends AppCompatActivity {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String fontStyle = sharedPref.getString(SettingsActivity.KEY_PREF_FONT, SettingsActivity.KEY_PREF_FONT_DEFAULT);
         if (!fontStyle.equals(SettingsActivity.KEY_PREF_FONT_DEFAULT)) {
-            mongolEditText.setTypeface(MongolFont.get(SettingsActivity.QIMED, getApplicationContext()));
+            metMongol.setTypeface(MongolFont.get(SettingsActivity.QIMED, getApplicationContext()));
+            metExampleSentences.setTypeface(MongolFont.get(SettingsActivity.QIMED, getApplicationContext()));
         }
     }
 
@@ -270,13 +274,14 @@ public class AddEditWordActivity extends AppCompatActivity {
 
         Vocab vocab = (isNewVocab()) ? new Vocab(mStudyMode) : mEditingWord;
         vocab.setListId(mCurrentListId);
-        vocab.setMongol(mongolEditText.getText().toString());
+        vocab.setMongol(metMongol.getText().toString());
         vocab.setDefinition(etDefinition.getText().toString());
         vocab.setPronunciation(etPronunciation.getText().toString());
         if (mTempAudioFilePathName.exists()) {
             deleteAudioFile(vocab);
             vocab.setAudioFilename(createAudioFileName(vocab));
         }
+        vocab.setExampleSentence(metExampleSentences.getText().toString());
 
         if (isNewVocab()) {
             vocab.setListId(mCurrentListId);
@@ -334,7 +339,7 @@ public class AddEditWordActivity extends AppCompatActivity {
     }
 
     private boolean notEnoughDataToSaveWord() {
-        return (TextUtils.isEmpty(mongolEditText.getText())
+        return (TextUtils.isEmpty(metMongol.getText())
                 && TextUtils.isEmpty(etDefinition.getText())
                 && TextUtils.isEmpty(etPronunciation.getText()));
     }
@@ -456,10 +461,11 @@ public class AddEditWordActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void results) {
             Toast.makeText(AddEditWordActivity.this, "new word added", Toast.LENGTH_SHORT).show();
-            mongolEditText.setText("");
+            metMongol.setText("");
             etDefinition.setText("");
             etPronunciation.setText("");
-            mongolEditText.requestFocus();
+            metExampleSentences.setText("");
+            metMongol.requestFocus();
             wordsWereAdded = true;
             deleteTempFile();
         }
@@ -507,9 +513,10 @@ public class AddEditWordActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void results) {
             Toast.makeText(AddEditWordActivity.this, "updated", Toast.LENGTH_SHORT).show();
-            mongolEditText.setText("");
+            metMongol.setText("");
             etDefinition.setText("");
             etPronunciation.setText("");
+            metExampleSentences.setText("");
             deleteTempFile();
             Intent intent = new Intent();
             intent.putExtra(EDIT_MODE_KEY, true);
@@ -542,9 +549,10 @@ public class AddEditWordActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Vocab vocabItem) {
-            mongolEditText.setText(vocabItem.getMongol());
+            metMongol.setText(vocabItem.getMongol());
             etDefinition.setText(vocabItem.getDefinition());
             etPronunciation.setText(vocabItem.getPronunciation());
+            metExampleSentences.setText(vocabItem.getExampleSentence());
             mEditingWord = vocabItem;
             setPlayButtonVisibility();
             if (getSupportActionBar() != null) {

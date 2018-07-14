@@ -19,7 +19,7 @@ import java.io.InputStreamReader;
 class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "suryaa.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String TAG = DatabaseHelper.class.getName();
 
 
@@ -46,10 +46,14 @@ class DatabaseHelper extends SQLiteOpenHelper {
         // method from https://riggaroo.co.za/android-sqlite-database-use-onupgrade-correctly/
         Log.e(TAG, "Updating database from " + oldVersion + " to " + newVersion);
         // For database upgrade add file like from_1_to_2.sql to the assets folder
-
+        String relativePathInAssetsFolder;
         switch (oldVersion) {
             case 1:
-                String relativePathInAssetsFolder = "databases/suryaa/from_1_to_2.sql";
+                relativePathInAssetsFolder = "databases/suryaa/from_1_to_2.sql";
+                Log.i(TAG, "relativePathInAssetsFolder: " + relativePathInAssetsFolder);
+                readAndExecuteSQLScript(db, context, relativePathInAssetsFolder);
+            case 2:
+                relativePathInAssetsFolder = "databases/suryaa/from_2_to_3.sql";
                 Log.i(TAG, "relativePathInAssetsFolder: " + relativePathInAssetsFolder);
                 readAndExecuteSQLScript(db, context, relativePathInAssetsFolder);
 

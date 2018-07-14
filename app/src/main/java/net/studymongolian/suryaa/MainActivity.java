@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import net.studymongolian.mongollibrary.MongolFont;
 import net.studymongolian.mongollibrary.MongolLabel;
+import net.studymongolian.mongollibrary.MongolTextView;
 import net.studymongolian.suryaa.database.DatabaseManager;
 
 import java.io.File;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private Queue<Vocab> mTodaysQuestions;
     private Vocab mCurrentVocabItem;
     private MongolLabel mMongolView;
+    private MongolTextView mExampleSentences;
     private TextView mDefinitionView;
     private TextView mPronunciationView;
     private ImageView mPlayButton;
@@ -71,12 +73,25 @@ public class MainActivity extends AppCompatActivity {
         SettingsActivity.setNightMode(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setToolBar();
+        setDefaultPreferenceValues();
+        initViews();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        setMongolFont(sharedPref);
+        getStudyMode(sharedPref);
+        getVocabForThisStudySession(sharedPref);
+    }
 
+    private void setToolBar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+    }
 
+    private void setDefaultPreferenceValues() {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+    }
 
+    private void initViews() {
         mNumberOfWordsView = findViewById(R.id.tv_number_of_words);
         mAnswerButton = findViewById(R.id.answer_button);
         mButtonPanel = findViewById(R.id.button_panel);
@@ -87,24 +102,28 @@ public class MainActivity extends AppCompatActivity {
         mPronunciationView.setTypeface(MongolFont.get(IPA_FONT, this));
         mPlayButton = findViewById(R.id.ib_play_audio);
         mPlayButton.setOnClickListener(mPlayButtonClickListener);
+        mExampleSentences = findViewById(R.id.mtv_example_sentences);
+    }
 
-        // set the MongolFont
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+    private void setMongolFont(SharedPreferences sharedPref) {
         String fontStyle = sharedPref.getString(SettingsActivity.KEY_PREF_FONT, SettingsActivity.KEY_PREF_FONT_DEFAULT);
         if (!fontStyle.equals(SettingsActivity.KEY_PREF_FONT_DEFAULT)) {
             mMongolView.setTypeface(MongolFont.get(SettingsActivity.QIMED, getApplicationContext()));
+            mExampleSentences.setTypeface(MongolFont.get(SettingsActivity.QIMED, getApplicationContext()));
         }
+    }
 
-        // get study mode
+    private void getStudyMode(SharedPreferences sharedPref) {
         String studyModeCode = sharedPref.getString(SettingsActivity.KEY_PREF_STUDY_MODE,
                 SettingsActivity.KEY_PREF_STUDY_MODE_CODE_DEFAULT);
         mStudyMode = StudyMode.lookupByCode(studyModeCode);
+    }
 
+    private void getVocabForThisStudySession(SharedPreferences sharedPref) {
         // get current list
         long currentListId = sharedPref.getLong(SettingsActivity.KEY_PREF_CURRENT_LIST, 1);
         // 1 is the default id (used on first run)
         new GetTodaysVocab(this).execute(currentListId);
-
     }
 
     // Menu icons are inflated just as they were with actionbar
@@ -234,7 +253,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private View.OnClickListener mPlayButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -271,8 +289,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
-
     };
 
 
@@ -326,6 +342,7 @@ public class MainActivity extends AppCompatActivity {
             setReadyToPlayImage();
             mPlayButton.setVisibility(View.VISIBLE);
         }
+        mExampleSentences.setVisibility(View.VISIBLE);
     }
 
     private boolean audioFileExistsForCurrentItem() {
@@ -468,6 +485,7 @@ public class MainActivity extends AppCompatActivity {
         mMongolView.setVisibility(View.INVISIBLE);
         mDefinitionView.setVisibility(View.INVISIBLE);
         mPronunciationView.setVisibility(View.INVISIBLE);
+        mExampleSentences.setVisibility(View.INVISIBLE);
         mPlayButton.setVisibility(View.INVISIBLE);
         mButtonPanel.setVisibility(View.INVISIBLE);
     }
@@ -481,18 +499,21 @@ public class MainActivity extends AppCompatActivity {
                 mMongolView.setVisibility(View.VISIBLE);
                 mDefinitionView.setVisibility(View.INVISIBLE);
                 mPronunciationView.setVisibility(View.INVISIBLE);
+                mExampleSentences.setVisibility(View.INVISIBLE);
                 mPlayButton.setVisibility(View.INVISIBLE);
                 break;
             case DEFINITION:
                 mMongolView.setVisibility(View.INVISIBLE);
                 mDefinitionView.setVisibility(View.VISIBLE);
                 mPronunciationView.setVisibility(View.INVISIBLE);
+                mExampleSentences.setVisibility(View.INVISIBLE);
                 mPlayButton.setVisibility(View.INVISIBLE);
                 break;
             case PRONUNCIATION:
                 mMongolView.setVisibility(View.INVISIBLE);
                 mDefinitionView.setVisibility(View.INVISIBLE);
                 mPronunciationView.setVisibility(View.VISIBLE);
+                mExampleSentences.setVisibility(View.INVISIBLE);
                 if (TextUtils.isEmpty(item.getAudioFilename())) {
                     mPlayButton.setVisibility(View.INVISIBLE);
                 } else {
@@ -508,6 +529,7 @@ public class MainActivity extends AppCompatActivity {
         mMongolView.setText(item.getMongol());
         mDefinitionView.setText(item.getDefinition());
         mPronunciationView.setText(item.getPronunciation());
+        mExampleSentences.setText(item.getExampleSentence());
     }
 
     private void setListNameWithQuestionsLeft() {
@@ -732,7 +754,6 @@ public class MainActivity extends AppCompatActivity {
                 DatabaseManager dbAdapter = new DatabaseManager(activity);
                 dbAdapter.deleteVocabItem(item.getId());
                 activity.deleteAudioFile(item);
-
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -787,7 +808,6 @@ public class MainActivity extends AppCompatActivity {
                 DatabaseManager dbAdapter = new DatabaseManager(activity);
                 dbAdapter.deleteAudioForVocabItem(item);
                 activity.deleteAudioFile(item);
-
             } catch (Exception e) {
                 Log.i("app", e.toString());
             }
@@ -909,7 +929,6 @@ public class MainActivity extends AppCompatActivity {
             if (activity == null || activity.isFinishing()) return null;
 
             try {
-
                 DatabaseManager dbAdapter = new DatabaseManager(activity);
                 dbAdapter.updateVocabItemList(vocabId, newListId);
                 FileUtils.moveAudioFile(activity, audioFileName, oldListId, newListId);

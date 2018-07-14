@@ -13,6 +13,7 @@ public class VocabEntry {
     static final String DEFINITION = "definition";
     static final String PRONUNCIATION = "pronunciation";
     static final String AUDIO_FILENAME = "audio_filename";
+    static final String EXAMPLE_SENTENCES = "example_sentences";
     static final String MONGOL_NEXT_DUE_DATE = "mongol_next_due_date";
     static final String MONGOL_CONSECUTIVE_CORRECT = "mongol_consecutive_correct";
     static final String MONGOL_EF = "mongol_easiness_factor";
@@ -31,6 +32,7 @@ public class VocabEntry {
             + DEFINITION + " TEXT,"
             + PRONUNCIATION + " TEXT,"
             + AUDIO_FILENAME + " TEXT,"
+            + EXAMPLE_SENTENCES + " TEXT,"
             + MONGOL_NEXT_DUE_DATE + " INTEGER DEFAULT 0,"
             + MONGOL_CONSECUTIVE_CORRECT + " INTEGER DEFAULT 0,"
             + MONGOL_EF + " REAL DEFAULT 2.5,"

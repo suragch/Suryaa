@@ -63,7 +63,6 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
         mCurrentList = getIntent().getLongExtra(LIST_ID_KEY, -1);
 
         new GetAllLists(this).execute();
-
     }
 
     @Override
@@ -198,15 +197,12 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
     };
 
     private void importFile() {
-
-
         Intent chooseFile;
         Intent intent;
         chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
         chooseFile.setType("files/*");
         intent = Intent.createChooser(chooseFile, "Choose a CSV text file");
         startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
-
     }
 
     private void exportList(VocabList list) {
@@ -215,7 +211,6 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
     }
 
     private void createNewList() {
-
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("New list name");
         final View view = getLayoutInflater().inflate(R.layout.new_list_name_alert, null);
@@ -525,7 +520,6 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
             }
 
             return result;
-
         }
 
         @Override
@@ -560,10 +554,10 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
             if (activityContext == null) return false;
 
             String csvFilePathName = params[0];
-            String listname = new File(csvFilePathName).getName();
-            if (listname.endsWith(FileUtils.EXPORT_IMPORT_FILE_EXTENSION)) {
-                listname = listname.replace(FileUtils.EXPORT_IMPORT_FILE_EXTENSION, "");
-                listname = listname.replace("_", " ");
+            String listName = new File(csvFilePathName).getName();
+            if (listName.endsWith(FileUtils.EXPORT_IMPORT_FILE_EXTENSION)) {
+                listName = listName.replace(FileUtils.EXPORT_IMPORT_FILE_EXTENSION, "");
+                listName = listName.replace("_", " ");
             }
 
             List<Vocab> allVocabInList;
@@ -572,7 +566,7 @@ public class ListsActivity extends AppCompatActivity implements ListsRvAdapter.I
 
             try {
                 DatabaseManager dbAdapter = new DatabaseManager(activityContext);
-                newListId = dbAdapter.createNewList(listname);
+                newListId = dbAdapter.createNewList(listName);
                 allVocabInList = FileUtils.importFile(csvFilePathName, newListId);
                 // copy audio files
 

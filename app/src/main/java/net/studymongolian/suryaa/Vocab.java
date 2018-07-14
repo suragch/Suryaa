@@ -19,6 +19,7 @@ public class Vocab {
     private StudyMode studyMode;
     private int qualityAssessment;
     private boolean isFirstViewToday;
+    private String exampleSentence;
 
     public Vocab(StudyMode studyMode) {
         this.id = -1;
@@ -27,6 +28,7 @@ public class Vocab {
         this.definition = "";
         this.pronunciation = "";
         this.audioFilename = "";
+        this.exampleSentence = "";
         this.nextDueDate = DEFAULT_NEXT_DUE_DATE;
         this.consecutiveCorrect = DEFAULT_CONSECUTIVE_CORRECT;
         this.easinessFactor = DEFAULT_EASINESS_FACTOR;
@@ -79,6 +81,10 @@ public class Vocab {
         return audioFilename;
     }
 
+    public String getExampleSentence() {
+        return exampleSentence;
+    }
+
     public void setAudioFilename(String audioFilename) {
         this.audioFilename = audioFilename;
     }
@@ -127,5 +133,9 @@ public class Vocab {
 
     public void setFirstViewToday(boolean firstViewToday) {
         isFirstViewToday = firstViewToday;
+    }
+
+    public void setExampleSentence(String exampleSentence) {
+        this.exampleSentence = exampleSentence;
     }
 }

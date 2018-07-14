@@ -38,7 +38,8 @@ public class DatabaseManager {
                 VocabEntry.MONGOL,
                 VocabEntry.DEFINITION,
                 VocabEntry.PRONUNCIATION,
-                VocabEntry.AUDIO_FILENAME
+                VocabEntry.AUDIO_FILENAME,
+                VocabEntry.EXAMPLE_SENTENCES
         };
         String selection = VocabEntry.LIST_ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(listId)};
@@ -50,6 +51,7 @@ public class DatabaseManager {
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
         int indexAudioFilename = cursor.getColumnIndex(VocabEntry.AUDIO_FILENAME);
+        int indexExample = cursor.getColumnIndex(VocabEntry.EXAMPLE_SENTENCES);
 
         while (cursor.moveToNext()) {
             Vocab vocabItem = new Vocab(null);
@@ -59,6 +61,7 @@ public class DatabaseManager {
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
             vocabItem.setAudioFilename(cursor.getString(indexAudioFilename));
+            vocabItem.setExampleSentence(cursor.getString(indexExample));
             vocabList.add(vocabItem);
         }
 
@@ -91,6 +94,7 @@ public class DatabaseManager {
                 VocabEntry.DEFINITION,
                 VocabEntry.PRONUNCIATION,
                 VocabEntry.AUDIO_FILENAME,
+                VocabEntry.EXAMPLE_SENTENCES,
                 nextDueDateColumn,
                 consecutiveCorrectColumn,
                 eFactorColumn
@@ -107,6 +111,7 @@ public class DatabaseManager {
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
         int indexAudio = cursor.getColumnIndex(VocabEntry.AUDIO_FILENAME);
+        int indexExample = cursor.getColumnIndex(VocabEntry.EXAMPLE_SENTENCES);
         int indexDate = cursor.getColumnIndex(nextDueDateColumn);
         int indexConsecutiveCorrect = cursor.getColumnIndex(consecutiveCorrectColumn);
         int indexEF = cursor.getColumnIndex(eFactorColumn);
@@ -119,6 +124,7 @@ public class DatabaseManager {
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
             vocabItem.setAudioFilename(cursor.getString(indexAudio));
+            vocabItem.setExampleSentence(cursor.getString(indexExample));
             vocabItem.setNextDueDate(cursor.getLong(indexDate));
             vocabItem.setConsecutiveCorrect(cursor.getInt(indexConsecutiveCorrect));
             vocabItem.setEasinessFactor(cursor.getFloat(indexEF));
@@ -178,6 +184,7 @@ public class DatabaseManager {
                 VocabEntry.DEFINITION,
                 VocabEntry.PRONUNCIATION,
                 VocabEntry.AUDIO_FILENAME,
+                VocabEntry.EXAMPLE_SENTENCES,
                 nextDueDateColumn,
                 consecutiveCorrectColumn,
                 eFactorColumn
@@ -193,6 +200,7 @@ public class DatabaseManager {
         int indexDefinition = cursor.getColumnIndex(VocabEntry.DEFINITION);
         int indexPronunciation = cursor.getColumnIndex(VocabEntry.PRONUNCIATION);
         int indexAudio = cursor.getColumnIndex(VocabEntry.AUDIO_FILENAME);
+        int indexExample = cursor.getColumnIndex(VocabEntry.EXAMPLE_SENTENCES);
         int indexDate = cursor.getColumnIndex(nextDueDateColumn);
         int indexNthTry = cursor.getColumnIndex(consecutiveCorrectColumn);
         int indexEF = cursor.getColumnIndex(eFactorColumn);
@@ -205,6 +213,7 @@ public class DatabaseManager {
             vocabItem.setDefinition(cursor.getString(indexDefinition));
             vocabItem.setPronunciation(cursor.getString(indexPronunciation));
             vocabItem.setAudioFilename(cursor.getString(indexAudio));
+            vocabItem.setExampleSentence(cursor.getString(indexExample));
             vocabItem.setNextDueDate(cursor.getLong(indexDate));
             vocabItem.setConsecutiveCorrect(cursor.getInt(indexNthTry));
             vocabItem.setEasinessFactor(cursor.getFloat(indexEF));
@@ -224,6 +233,7 @@ public class DatabaseManager {
         contentValues.put(VocabEntry.DEFINITION, entry.getDefinition());
         contentValues.put(VocabEntry.PRONUNCIATION, entry.getPronunciation());
         contentValues.put(VocabEntry.AUDIO_FILENAME, entry.getAudioFilename());
+        contentValues.put(VocabEntry.EXAMPLE_SENTENCES, entry.getExampleSentence());
 
         contentValues.put(VocabEntry.MONGOL_NEXT_DUE_DATE, entry.getNextDueDate());
         contentValues.put(VocabEntry.MONGOL_CONSECUTIVE_CORRECT, entry.getConsecutiveCorrect());
@@ -255,6 +265,7 @@ public class DatabaseManager {
                 contentValues.put(VocabEntry.DEFINITION, item.getDefinition());
                 contentValues.put(VocabEntry.PRONUNCIATION, item.getPronunciation());
                 contentValues.put(VocabEntry.AUDIO_FILENAME, item.getAudioFilename());
+                contentValues.put(VocabEntry.EXAMPLE_SENTENCES, item.getExampleSentence());
 
                 contentValues.put(VocabEntry.MONGOL_NEXT_DUE_DATE, item.getNextDueDate());
                 contentValues.put(VocabEntry.MONGOL_CONSECUTIVE_CORRECT, item.getConsecutiveCorrect());
@@ -292,6 +303,7 @@ public class DatabaseManager {
         contentValues.put(VocabEntry.DEFINITION, updatedItem.getDefinition());
         contentValues.put(VocabEntry.PRONUNCIATION, updatedItem.getPronunciation());
         contentValues.put(VocabEntry.AUDIO_FILENAME, updatedItem.getAudioFilename());
+        contentValues.put(VocabEntry.EXAMPLE_SENTENCES, updatedItem.getExampleSentence());
         contentValues.put(nextDueDateColumn, updatedItem.getNextDueDate());
         contentValues.put(consecutiveCorrectColumn, updatedItem.getConsecutiveCorrect());
         contentValues.put(eFactorColumn, updatedItem.getEasinessFactor());

@@ -115,10 +115,12 @@ class FileUtils {
         String definition = item.getDefinition().replace("\"", "\"\"");
         String pronunciation = item.getPronunciation().replace("\"", "\"\"");
         String audio = item.getAudioFilename();
+        String example = item.getExampleSentence();
         String content = "\"" + mongol + "\"," +
                 "\"" + definition + "\"," +
                 "\"" + pronunciation + "\"," +
-                "\"" + audio + "\"";
+                "\"" + audio + "\"," +
+                "\"" + example + "\"";
         return content;
     }
 
@@ -142,12 +144,18 @@ class FileUtils {
         while (scanner.hasNext()) {
             List<String> line = parseLine(scanner.nextLine());
             // TODO do error checking on line
+            int size = line.size();
             Vocab item = new Vocab(null);
             item.setListId(listId);
             item.setMongol(line.get(0));
-            item.setDefinition(line.get(1));
-            item.setPronunciation(line.get(2));
-            item.setAudioFilename(line.get(3));
+            if (size > 1)
+                item.setDefinition(line.get(1));
+            if (size > 2)
+                item.setPronunciation(line.get(2));
+            if (size > 3)
+                item.setAudioFilename(line.get(3));
+            if (size > 4)
+                item.setExampleSentence(line.get(4));
             vocabs.add(item);
         }
         scanner.close();
@@ -262,7 +270,7 @@ class FileUtils {
             source = new FileInputStream(sourceFile).getChannel();
             destination = new FileOutputStream(destFile).getChannel();
             destination.transferFrom(source, 0, source.size());
-        }catch (IOException e) {
+        } catch (IOException e) {
             return false;
         } finally {
             if (source != null) {
@@ -286,9 +294,9 @@ class FileUtils {
     }
 
     public static void moveAudioFile(Context context,
-                               String audioFileName,
-                               long oldListId,
-                               long newListId) {
+                                     String audioFileName,
+                                     long oldListId,
+                                     long newListId) {
 
         String oldPath = FileUtils.getAudioPathName(context, oldListId, audioFileName);
         String newPath = FileUtils.getAudioPathName(context, newListId, audioFileName);
