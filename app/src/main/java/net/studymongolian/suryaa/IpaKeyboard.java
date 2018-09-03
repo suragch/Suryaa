@@ -137,15 +137,19 @@ public class IpaKeyboard extends Keyboard {
         // Row 1
 
         mKeyA.setText("ɑ");
+        mKeyA.setSwipeUpText("æ");
         mKeyA.setSubText("æ");
 
         mKeyE.setText("ə");
-        mKeyE.setSubText("ə̌");
+        mKeyE.setSwipeUpText("e");
+        mKeyE.setSubText("e");
 
         mKeyI.setText("i");
-        mKeyI.setSubText("");
+        mKeyI.setSwipeUpText("ɪ");
+        mKeyI.setSubText("ɪ");
 
         mKeyO.setText("ɔ");
+        mKeyO.setSwipeUpText("œ");
         mKeyO.setSubText("œ");
 
         mKeyU.setText("ʊ");
@@ -160,15 +164,18 @@ public class IpaKeyboard extends Keyboard {
         // Row 2
 
         mKeyNA.setText("n");
+        mKeyNA.setSwipeUpText("ŋ");
         mKeyNA.setSubText("ŋ");
 
         mKeyBA.setText("b");
+        mKeyBA.setSwipeUpText("p");
         mKeyBA.setSubText("p");
 
         mKeyQA.setText("x");
         mKeyQA.setSubText("");
 
         mKeyGA.setText("g");
+        mKeyGA.setSwipeUpText("k");
         mKeyGA.setSubText("k");
 
         mKeyMA.setText("m");
@@ -180,6 +187,7 @@ public class IpaKeyboard extends Keyboard {
         // Row 3
 
         mKeySA.setText("s");
+        mKeySA.setSwipeUpText("ʃ");
         mKeySA.setSubText("ʃ");
 
         mKeyTA.setText("t");
@@ -189,12 +197,15 @@ public class IpaKeyboard extends Keyboard {
         mKeyDA.setSubText("");
 
         mKeyCHA.setText("ʧ");
+        mKeyCHA.setSwipeUpText("ʦ");
         mKeyCHA.setSubText("ʦ");
 
         mKeyJA.setText("ʤ");
+        mKeyJA.setSwipeUpText("ʣ");
         mKeyJA.setSubText("ʣ");
 
         mKeyYA.setText("j");
+        mKeyYA.setSwipeUpText("w");
         mKeyYA.setSubText("w");
 
         mKeyRA.setText("r");
@@ -203,7 +214,8 @@ public class IpaKeyboard extends Keyboard {
         // row 4
 
         mKeyColon.setText("ː");
-        mKeyColon.setSubText("");
+        mKeyColon.setSwipeUpText("̌");
+        mKeyColon.setSubText("̌");
 
         mKeySpace.setText(" ");
         mKeySpace.setSubText("");
@@ -406,24 +418,26 @@ public class IpaKeyboard extends Keyboard {
 
     private List<PopupKeyCandidate> getCandidatesForA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("æ"));
-        candidates.add(new PopupKeyCandidate("ɛ"));
+        candidates.add(new PopupKeyCandidate("æ", false));
+        candidates.add(new PopupKeyCandidate("ɛ", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForE() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("̌"));
+        candidates.add(new PopupKeyCandidate("e", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForI() {
-        return null;
+        List<PopupKeyCandidate> candidates = new ArrayList<>();
+        candidates.add(new PopupKeyCandidate("ɪ", false));
+        return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForO() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("œ"));
+        candidates.add(new PopupKeyCandidate("œ", false));
         return candidates;
     }
 
@@ -433,40 +447,40 @@ public class IpaKeyboard extends Keyboard {
 
     private List<PopupKeyCandidate> getCandidatesForOE() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("ö"));
-        candidates.add(new PopupKeyCandidate("ө"));
+        candidates.add(new PopupKeyCandidate("ö", false));
+        candidates.add(new PopupKeyCandidate("ө", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForUE() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("ü"));
-        candidates.add(new PopupKeyCandidate("ʉ"));
+        candidates.add(new PopupKeyCandidate("ü", false));
+        candidates.add(new PopupKeyCandidate("ʉ", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForNA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("ŋ"));
+        candidates.add(new PopupKeyCandidate("ŋ", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForBA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("p"));
-        candidates.add(new PopupKeyCandidate("f"));
+        candidates.add(new PopupKeyCandidate("p", false));
+        candidates.add(new PopupKeyCandidate("f", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForQA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("h"));
+        candidates.add(new PopupKeyCandidate("h", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForGA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("k"));
+        candidates.add(new PopupKeyCandidate("k", false));
         return candidates;
     }
 
@@ -480,7 +494,7 @@ public class IpaKeyboard extends Keyboard {
 
     private List<PopupKeyCandidate> getCandidatesForSA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("ʃ"));
+        candidates.add(new PopupKeyCandidate("ʃ", false));
         return candidates;
     }
 
@@ -494,19 +508,19 @@ public class IpaKeyboard extends Keyboard {
 
     private List<PopupKeyCandidate> getCandidatesForCHA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("ʦ"));
+        candidates.add(new PopupKeyCandidate("ʦ", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForJA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("ʣ"));
+        candidates.add(new PopupKeyCandidate("ʣ", false));
         return candidates;
     }
 
     private List<PopupKeyCandidate> getCandidatesForYA() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate("w"));
+        candidates.add(new PopupKeyCandidate("w", false));
         return candidates;
     }
 
@@ -516,11 +530,12 @@ public class IpaKeyboard extends Keyboard {
 
     private List<PopupKeyCandidate> getCandidatesForColon() {
         List<PopupKeyCandidate> candidates = new ArrayList<>();
-        candidates.add(new PopupKeyCandidate(":"));
-        candidates.add(new PopupKeyCandidate("."));
-        candidates.add(new PopupKeyCandidate("?"));
-        candidates.add(new PopupKeyCandidate(","));
-        candidates.add(new PopupKeyCandidate("!"));
+        candidates.add(new PopupKeyCandidate("x̌", false));
+        candidates.add(new PopupKeyCandidate(":", false));
+        candidates.add(new PopupKeyCandidate(".", false));
+        candidates.add(new PopupKeyCandidate("?", false));
+        candidates.add(new PopupKeyCandidate(",", false));
+        candidates.add(new PopupKeyCandidate("!", false));
         return candidates;
     }
 
